@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "display.h"
+#include "parser.h"
 
 int main(void) {
     // while true get next line (string)
@@ -15,6 +16,9 @@ int main(void) {
         if(!strcmp(input, "exit")) {
             exit(1);
         }
+
+        input_command(input);
+
     }
     // pass line to parser.c to return a list of commands (strings)
     // send list of commands to command.c to execute

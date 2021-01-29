@@ -1,0 +1,1 @@
+void input_command(char* input);
