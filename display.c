@@ -6,9 +6,6 @@
 #include <pwd.h>
 #include <linux/limits.h>
 
-// use default character limit for usernames
-int USER_MAX = 32;
-
 /*
  * This function will print the current username and working directory before user input,
  * in the format: user:current_folder without including the whole path
