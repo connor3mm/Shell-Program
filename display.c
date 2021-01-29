@@ -8,7 +8,7 @@
 
 /*
  * This function will print the current username and working directory before user input,
- * in the format: user:current_folder without including the whole path
+ * in the format: user@current_folder> without including the whole path
  */
 void print_display_prompt() {
     // Get working directory
