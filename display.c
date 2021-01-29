@@ -4,14 +4,14 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
-#include <linux/limits.h>
 
 /*
  * This function will print the current username and working directory before user input,
  * in the format: user@current_folder> without including the whole path
  */
 void print_display_prompt() {
-    // Get working directory
+    // Get working directory. PATH_MAX declared directly to make it work on Cygwin.
+    uint PATH_MAX = 4096;
     char current_working_dir[PATH_MAX];
     getcwd(current_working_dir, PATH_MAX);
     // Get last folder - we want to keep the prompt length down as per the specification
