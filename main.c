@@ -5,6 +5,7 @@
 #include <pwd.h>
 
 int main(void) {
+    // while true get next line (string)
     // get user name to display before command
     struct passwd *passwd_entry = getpwuid(getuid());
     if (passwd_entry == NULL) {
@@ -12,8 +13,6 @@ int main(void) {
         exit(1);
     }
     printf("Name: %s $ ", passwd_entry->pw_name);
-    printf("\n");
-    // while true get next line (string)
     // pass line to parser.c to return a list of commands (strings)
     // send list of commands to command.c to execute
     return 0;
