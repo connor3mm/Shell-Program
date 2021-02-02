@@ -2,43 +2,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <pwd.h>
+#include <errno.h>
 
 /*
 * This function will allow the user to input into a command to the terminal
 */
 void input_command(char *input) {
-
-    // using delimiters to slip the input
-
-    char *pChr = strtok(input, "\t|><&;");
-
-    char *tokens[50];
+    char *tokens[51];
+    // treat all delimiters as command line argument separators according to the spec
+    char *pChr = strtok(input, " \t|><&;");
     int index = 0;
-
     while (pChr != NULL) {
-
+        if (index >= 50) {
+            printf("Argument limit exceeded");
+            break;
+        }
         tokens[index] = pChr;
         printf("%s ", tokens[index]);
+        pChr = strtok(NULL, " \t|><&;");
         index++;
+    }
+    // add null terminator as required by execve
+    tokens[index] = NULL;
 
-        int pid = fork();
-        if (pid == -1) {
-            exit(1);
-        } else if (pid == 0) {
-            // todo: use strtok_r to split command line arguments
-            char *arg_list = {tokens[index], NULL};
-            execv(tokens[index], &arg_list);
-            printf("The current process is (%u)\n", getpid());
-            exit(1);
-        } else {
-            printf("The current non-0 process is (%u)\n", getpid());
-            int state;
-            // todo: redirect stderr and stdout
-            waitpid(pid, &state, 0);
-            pChr = strtok(NULL, "\t|><&;");
-        }
+    int pid = fork();
+    if (pid < 0) {
+        printf("fork() failed");
+        exit(1);
+    } else if (pid == 0) { // child process
+        char* env = {NULL}; //todo: pass PATH
+        execve(tokens[0], tokens, &env);
+        // exec functions do not return if successful, this code is reached only due to errors
+        printf("Error: %s\n", strerror(errno));
+        exit(1);
+    } else { // parent process
+        int state;
+        waitpid(pid, &state, 0);
     }
 }
