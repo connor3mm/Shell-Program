@@ -12,6 +12,9 @@ void input_command(char *input) {
     char *tokens[51];
     // treat all delimiters as command line argument separators according to the spec
     char *pChr = strtok(input, " \t|><&;");
+    if (pChr == NULL) { // not even one token (empty command line)
+        return;
+    }
     int index = 0;
     while (pChr != NULL) {
         if (index >= 50) {
@@ -31,7 +34,7 @@ void input_command(char *input) {
         printf("fork() failed");
         exit(1);
     } else if (pid == 0) { // child process
-        char* env = {NULL}; //todo: pass PATH
+        char *env = {NULL}; //todo: pass PATH
         execve(tokens[0], tokens, &env);
         // exec functions do not return if successful, this code is reached only due to errors
         printf("Error: %s\n", strerror(errno));
