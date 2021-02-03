@@ -5,15 +5,18 @@
 #include "parser.h"
 
 int main(void) {
-    // while true get next line (string)
-    // get user name to display before command
-
 
     while(1) {
         print_display_prompt();
 
         char input[512];
-        gets(input);
+        if(fgets(input, 512, stdin) == NULL) { // End of File (CTRL+D)
+            printf("Exiting...\n");
+            exit(1);
+        }
+        // remove \n at the end of the line by replacing it with null-terminator
+        input[strlen(input) - 1] = (char) 0x00;
+
 
         if(!strcmp(input, "exit")) {
             exit(1);
