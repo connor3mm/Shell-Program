@@ -21,6 +21,7 @@ int main(void) {
         }
 
         input_command(input);
+        putchar('\n');
     }
     return 0;
 }

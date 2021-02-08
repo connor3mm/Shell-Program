@@ -26,7 +26,7 @@ void input_command(char *input) {
             break;
         }
         tokens[index] = pChr;
-        printf("%s ", tokens[index]);
+        //printf("%s ", tokens[index]);
         pChr = strtok(NULL, " \t|><&;");
         index++;
     }
