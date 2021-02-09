@@ -14,7 +14,7 @@ int main(void) {
         char *homeDirectory = getenv("HOME");
         int result = chdir(homeDirectory);
 
-        if(result == -1) { //Changing the directory failed.
+        if(result == -1) { //Changing the directory failed. Need to handle this somehow
             break;
         }
 
