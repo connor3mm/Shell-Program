@@ -2,10 +2,32 @@
 #include <memory.h>
 #include "display.h"
 #include "parser.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int main(void) {
 
     while (1) {
+        char *currentPath = getenv("PATH"); //Gets current path so we can set it on exit
+
+        //Set the home directory
+        char *homeDirectory = getenv("HOME");
+        int result = chdir(homeDirectory);
+
+        if(result == -1) { //Changing the directory failed.
+            break;
+        }
+
+        char* cwd;
+        uint PATH_MAX = 4096;
+        char buff[PATH_MAX + 1];
+
+        cwd = getcwd( buff, PATH_MAX + 1 );
+
+        if( cwd != NULL ) {
+            printf( "My working directory is %s.\n", cwd );
+        }
+
         print_display_prompt();
 
         char input[512];
