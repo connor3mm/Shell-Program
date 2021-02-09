@@ -19,7 +19,7 @@ int main(void) {
         }
 
         char* cwd;
-        uint PATH_MAX = 4096;
+        uint PATH_MAX = 4096; //This is only required on windows (linux has PATH_MAX anyway)
         char buff[PATH_MAX + 1];
 
         cwd = getcwd( buff, PATH_MAX + 1 );
