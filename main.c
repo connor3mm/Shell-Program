@@ -4,30 +4,22 @@
 #include "parser.h"
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 int main(void) {
+    char *currentPath = getenv("PATH"); //Gets current path so we can set it on exit
+
+    //Get the home directory
+    char *homeDirectory = getenv("HOME");
+    if (homeDirectory != NULL) {
+        // Change to home directory
+        int result = chdir(homeDirectory);
+        if (result == -1) { //Changing the directory failed. Need to handle this somehow
+            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
+        }
+    }
 
     while (1) {
-        char *currentPath = getenv("PATH"); //Gets current path so we can set it on exit
-
-        //Set the home directory
-        char *homeDirectory = getenv("HOME");
-        int result = chdir(homeDirectory);
-
-        if(result == -1) { //Changing the directory failed. Need to handle this somehow
-            break;
-        }
-
-        char* cwd;
-        uint PATH_MAX = 4096; //This is only required on windows (linux has PATH_MAX anyway)
-        char buff[PATH_MAX + 1];
-
-        cwd = getcwd( buff, PATH_MAX + 1 );
-
-        if( cwd != NULL ) {
-            printf( "My working directory is %s.\n", cwd );
-        }
-
         print_display_prompt();
 
         char input[512];
@@ -45,5 +37,6 @@ int main(void) {
         input_command(input);
         putchar('\n');
     }
+    setenv("PATH", currentPath, 1);
     return 0;
 }
