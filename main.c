@@ -76,18 +76,15 @@ int main(void) {
 
             continue;
         } else if (!strcmp(tokens[0], "cd")) {
-            if(tokens[2] != NULL) {
+            if(tokens[1] == NULL) {
+                chdir(getenv("HOME"));
+            } else if(tokens[2] == NULL) {
+                if (chdir(tokens[1]) == -1){
+                    printf("Error: %s %s\n", tokens[1], strerror(errno));
+                }
+            } else if(tokens[2] != NULL) {
                 printf("Error, cd only takes one argument\n");
                 continue;
-            } else if(tokens[1] == NULL) {
-                chdir(getenv("HOME"));
-            } else
-            {
-                if (chdir(tokens[1]) == -1)
-                {
-                    printf("Error: %s %s\n", tokens[1], strerror(errno));
-                }    
-
             }
         }
         else {
