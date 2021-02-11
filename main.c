@@ -67,7 +67,17 @@ int main(void) {
             }
             
             continue;
-        } else {
+        } else if (!strcmp(tokens[0], "cd")) {
+
+            if (tokens[1] == NULL)
+            {
+                chdir(getenv("HOME"));
+            } else
+            {
+                chdir(tokens[1]);
+            }
+        }
+        else {
             int pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
