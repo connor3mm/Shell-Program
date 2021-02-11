@@ -58,7 +58,7 @@ int main(void) {
         } else if (!strcmp(tokens[0], "getpath")) {
             // get the PATH
             continue;
-        } else if (!strcmp(tokens[0], "getpath")) {
+        } else if (!strcmp(tokens[0], "setpath")) {
             // set the PATH
             continue;
         } else {
