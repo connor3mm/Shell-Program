@@ -32,10 +32,6 @@ int main(void) {
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
-        if (!strcmp(input, "exit")) {
-            break;
-        }
-
         char *tokens[51];
         // treat all delimiters as command line argument separators according to the spec
         char *pChr = strtok(input, " \t|><&;");
@@ -55,18 +51,28 @@ int main(void) {
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
-        int pid = fork();
-        if (pid < 0) {
-            printf("fork() failed\n");
-            return 0;
-        } else if (pid == 0) { // child process
-            execvp(tokens[0], tokens);
-            // exec functions do not return if successful, this code is reached only due to errors
-            printf("Error: %s\n", strerror(errno));
-            exit(1);
-        } else { // parent process
-            int state;
-            waitpid(pid, &state, 0);
+        if (!strcmp(tokens[0], "exit")) {
+            break;
+        } else if (!strcmp(tokens[0], "getpath")) {
+            // get the PATH
+            continue;
+        } else if (!strcmp(tokens[0], "getpath")) {
+            // set the PATH
+            continue;
+        } else {
+            int pid = fork();
+            if (pid < 0) {
+                printf("fork() failed\n");
+                return 0;
+            } else if (pid == 0) { // child process
+                execvp(tokens[0], tokens);
+                // exec functions do not return if successful, this code is reached only due to errors
+                printf("Error: %s\n", strerror(errno));
+                exit(1);
+            } else { // parent process
+                int state;
+                waitpid(pid, &state, 0);
+            }
         }
     }
     setenv("PATH", currentPath, 1);
