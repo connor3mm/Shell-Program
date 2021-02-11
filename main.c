@@ -23,6 +23,7 @@ int main(void) {
         }
     }
 
+
     while (1) {
         print_display_prompt();
 
@@ -56,16 +57,22 @@ int main(void) {
         if (!strcmp(tokens[0], "exit")) {
             break;
         } else if (!strcmp(tokens[0], "getpath")) {
-            printf("%s\n", getenv("PATH")); 
+            if(tokens[1] != NULL) {
+                printf("Error, getpath does not take any arguments.\n");
+                continue;
+            }
+            printf("%s\n", getenv("PATH"));
         } else if (!strcmp(tokens[0], "setpath")) {
-            if (tokens[1] == NULL)
-            {
+            if(tokens[2] != NULL) {
+                printf("Error, setpath can only take one argument.\n");
+                continue;
+            } else if(tokens[1] == NULL) {
                 printf("Error, setpath requires an argument.\n");
             } else
             {
                 setenv("PATH", tokens[1], 1);
             }
-            
+
             continue;
         } else {
             int pid = fork();
