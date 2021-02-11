@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <sys/wait.h>
 
 int main(void) {
 
@@ -34,7 +36,38 @@ int main(void) {
             break;
         }
 
-        input_command(input);
+        char *tokens[51];
+        // treat all delimiters as command line argument separators according to the spec
+        char *pChr = strtok(input, " \t|><&;");
+        if (pChr == NULL) { // not even one token (empty command line)
+            return 0;
+        }
+        int index = 0;
+        while (pChr != NULL) {
+            if (index >= 50) {
+                printf("Argument limit exceeded");
+                break;
+            }
+            tokens[index] = pChr;
+            pChr = strtok(NULL, " \t|><&;");
+            index++;
+        }
+        // add null terminator as required by execvp
+        tokens[index] = NULL;
+
+        int pid = fork();
+        if (pid < 0) {
+            printf("fork() failed\n");
+            return 0;
+        } else if (pid == 0) { // child process
+            execvp(tokens[0], tokens);
+            // exec functions do not return if successful, this code is reached only due to errors
+            printf("Error: %s\n", strerror(errno));
+            exit(1);
+        } else { // parent process
+            int state;
+            waitpid(pid, &state, 0);
+        }
     }
     setenv("PATH", currentPath, 1);
     return 0;
