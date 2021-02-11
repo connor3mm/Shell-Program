@@ -9,6 +9,8 @@
 #include <sys/wait.h>
 
 int main(void) {
+    // this should be 0 on successful run, 1 on error
+    int statusCode = 0;
 
     char *currentPath = getenv("PATH"); //Gets current path so we can set it on exit
 
@@ -36,7 +38,7 @@ int main(void) {
         // treat all delimiters as command line argument separators according to the spec
         char *pChr = strtok(input, " \t|><&;");
         if (pChr == NULL) { // not even one token (empty command line)
-            return 0;
+            continue;
         }
         int index = 0;
         while (pChr != NULL) {
@@ -56,19 +58,21 @@ int main(void) {
         } else if (!strcmp(tokens[0], "getpath")) {
             // get the PATH
             continue;
-        } else if (!strcmp(tokens[0], "getpath")) {
+        } else if (!strcmp(tokens[0], "setpath")) {
             // set the PATH
             continue;
         } else {
             int pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
-                return 0;
+                statusCode = 1;
+                break;
             } else if (pid == 0) { // child process
                 execvp(tokens[0], tokens);
                 // exec functions do not return if successful, this code is reached only due to errors
                 printf("Error: %s\n", strerror(errno));
-                exit(1);
+                statusCode = 1;
+                break;
             } else { // parent process
                 int state;
                 waitpid(pid, &state, 0);
@@ -76,5 +80,5 @@ int main(void) {
         }
     }
     setenv("PATH", currentPath, 1);
-    return 0;
+    return statusCode;
 }
