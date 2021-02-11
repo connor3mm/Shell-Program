@@ -74,7 +74,11 @@ int main(void) {
                 chdir(getenv("HOME"));
             } else
             {
-                chdir(tokens[1]);
+                if (chdir(tokens[1]) == -1)
+                {
+                    printf("Error: %s\n", strerror(errno));
+                }    
+
             }
         }
         else {
