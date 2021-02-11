@@ -53,6 +53,7 @@ int main(void) {
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
+        // check for built-in commands before forking
         if (!strcmp(tokens[0], "exit")) {
             break;
         } else if (!strcmp(tokens[0], "getpath")) {
