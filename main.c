@@ -79,7 +79,7 @@ int main(void) {
                 chdir(getenv("HOME"));
             } else if(tokens[2] == NULL) {
                 if (chdir(tokens[1]) == -1){
-                    printf("Error: %s\n", strerror(errno));
+                    printf("Error: %s %s\n", tokens[1], strerror(errno));
                 }
             } else if(tokens[2] != NULL) {
                 printf("Error, cd only takes one argument\n");
@@ -95,7 +95,7 @@ int main(void) {
             } else if (pid == 0) { // child process
                 execvp(tokens[0], tokens);
                 // exec functions do not return if successful, this code is reached only due to errors
-                printf("Error: %s\n", strerror(errno));
+                printf("Error: %s %s\n", tokens[0], strerror(errno));
                 statusCode = 1;
                 break;
             } else { // parent process
