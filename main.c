@@ -7,14 +7,14 @@
 #include <errno.h>
 
 int main(void) {
+
     char *currentPath = getenv("PATH"); //Gets current path so we can set it on exit
 
     //Get the home directory
     char *homeDirectory = getenv("HOME");
     if (homeDirectory != NULL) {
         // Change to home directory
-        int result = chdir(homeDirectory);
-        if (result == -1) { //Changing the directory failed. Need to handle this somehow
+        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
@@ -35,7 +35,6 @@ int main(void) {
         }
 
         input_command(input);
-        putchar('\n');
     }
     setenv("PATH", currentPath, 1);
     return 0;
