@@ -23,6 +23,7 @@ int main(void) {
         }
     }
 
+
     while (1) {
         print_display_prompt();
 
@@ -57,27 +58,34 @@ int main(void) {
         if (!strcmp(tokens[0], "exit")) {
             break;
         } else if (!strcmp(tokens[0], "getpath")) {
-            printf("%s\n", getenv("PATH")); 
+            if(tokens[1] != NULL) {
+                printf("Error, getpath does not take any arguments.\n");
+                continue;
+            }
+            printf("%s\n", getenv("PATH"));
         } else if (!strcmp(tokens[0], "setpath")) {
-            if (tokens[1] == NULL)
-            {
+            if(tokens[2] != NULL) {
+                printf("Error, setpath can only take one argument.\n");
+                continue;
+            } else if(tokens[1] == NULL) {
                 printf("Error, setpath requires an argument.\n");
             } else
             {
                 setenv("PATH", tokens[1], 1);
             }
-            
+
             continue;
         } else if (!strcmp(tokens[0], "cd")) {
-
-            if (tokens[1] == NULL)
-            {
+            if(tokens[2] != NULL) {
+                printf("Error, cd only takes one argument\n");
+                continue;
+            } else if(tokens[1] == NULL) {
                 chdir(getenv("HOME"));
             } else
             {
                 if (chdir(tokens[1]) == -1)
                 {
-                    printf("Error: %s\n", strerror(errno));
+                    printf("Error: %s %s\n", tokens[1], strerror(errno));
                 }    
 
             }
@@ -91,7 +99,7 @@ int main(void) {
             } else if (pid == 0) { // child process
                 execvp(tokens[0], tokens);
                 // exec functions do not return if successful, this code is reached only due to errors
-                printf("Error: %s\n", strerror(errno));
+                printf("Error: %s %s\n", tokens[0], strerror(errno));
                 statusCode = 1;
                 break;
             } else { // parent process
