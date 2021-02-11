@@ -75,9 +75,10 @@ int main(void) {
 
             continue;
         } else if (!strcmp(tokens[0], "cd")) {
-
-            if (tokens[1] == NULL)
-            {
+            if(tokens[2] != NULL) {
+                printf("Error, cd only takes one argument\n");
+                continue;
+            } else if(tokens[1] == NULL) {
                 chdir(getenv("HOME"));
             } else
             {
