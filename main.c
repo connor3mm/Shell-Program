@@ -26,6 +26,9 @@ int main(void) {
         }
     }
     char *history[20];
+    int front = 0;
+    int back = 0;
+    int historySize = 3;
     int currentHistoryIndex = 0;
 
     while (1) {
@@ -60,11 +63,24 @@ int main(void) {
         if (historyNumber != 0) {
             // tokenize from history entry
             pChr = history[historyNumber - 1];
+        
         } else {
+
             // add command line to history
+            if (currentHistoryIndex == historySize)
+            {
+
+                for (size_t i = 0; i < currentHistoryIndex; i++)
+                {
+                    history[i] = history[i-1];
+                    continue; 
+                }     
+            
+                
+            }
+            
             history[currentHistoryIndex] = strdup(input);
             currentHistoryIndex++;
-            //tokenize input from command line
             pChr = strtok(input, " \t|><&;");
         }
 
