@@ -8,6 +8,9 @@
 #include <string.h>
 #include <sys/wait.h>
 
+
+#define HISTORY_LIMIT 4
+
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
