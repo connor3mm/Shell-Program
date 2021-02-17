@@ -45,7 +45,8 @@ int main(void) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
             } else if (historyNumber < 1 || historyNumber > 20) {
-                printf("Invalid historyNumber, history entries range from 1 to 20\n");
+                printf("Invalid history number, history entries range from 1 to 20\n");
+                continue;
             }
         }
 
@@ -80,6 +81,7 @@ int main(void) {
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
+        // check for built-in commands before forking
         if (!strcmp(tokens[0], "exit")) {
             break;
         } else if (!strcmp(tokens[0], "getpath")) {
