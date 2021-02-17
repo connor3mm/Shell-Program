@@ -22,7 +22,8 @@ int main(void) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
-
+    char **history[20];
+    int currentHistoryIndex = 0;
 
     while (1) {
         print_display_prompt();
@@ -35,9 +36,34 @@ int main(void) {
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
+        // Check if it's a history command
+        int historyNumber = 0;
+        if (input[0] == '!' && strlen(input) > 1) {
+            // convert string after ! to integer
+            historyNumber = (int) strtol(input + 1, NULL, 10);
+            if (errno != 0) {
+                printf("Error: %s\n", strerror(errno));
+                continue;
+            } else if (historyNumber < 1 || historyNumber > 20) {
+                printf("Invalid historyNumber, history entries range from 1 to 20\n");
+            }
+        }
+
         char *tokens[51];
         // treat all delimiters as command line argument separators according to the spec
-        char *pChr = strtok(input, " \t|><&;");
+        char *pChr;
+        // did we type a history command
+        if (historyNumber != 0) {
+            // tokenize from history entry
+            pChr = *history[historyNumber - 1];
+        } else {
+            // add command line to history
+            *history[currentHistoryIndex] = strdup(input);
+            currentHistoryIndex++;
+            //tokenize input from command line
+            pChr = strtok(input, " \t|><&;");
+        }
+
         if (pChr == NULL) { // not even one token (empty command line)
             continue;
         }
@@ -58,36 +84,34 @@ int main(void) {
         if (!strcmp(tokens[0], "exit")) {
             break;
         } else if (!strcmp(tokens[0], "getpath")) {
-            if(tokens[1] != NULL) {
+            if (tokens[1] != NULL) {
                 printf("Error, getpath does not take any arguments.\n");
                 continue;
             }
             printf("%s\n", getenv("PATH"));
         } else if (!strcmp(tokens[0], "setpath")) {
-            if(tokens[2] != NULL) {
+            if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
                 continue;
-            } else if(tokens[1] == NULL) {
+            } else if (tokens[1] == NULL) {
                 printf("Error, setpath requires an argument.\n");
-            } else
-            {
+            } else {
                 setenv("PATH", tokens[1], 1);
             }
 
             continue;
         } else if (!strcmp(tokens[0], "cd")) {
-            if(tokens[1] == NULL) {
+            if (tokens[1] == NULL) {
                 chdir(getenv("HOME"));
-            } else if(tokens[2] == NULL) {
-                if (chdir(tokens[1]) == -1){
+            } else if (tokens[2] == NULL) {
+                if (chdir(tokens[1]) == -1) {
                     printf("Error: %s %s\n", tokens[1], strerror(errno));
                 }
-            } else if(tokens[2] != NULL) {
+            } else if (tokens[2] != NULL) {
                 printf("Error, cd only takes one argument\n");
                 continue;
             }
-        }
-        else {
+        } else {
             int pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
