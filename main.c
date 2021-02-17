@@ -69,16 +69,9 @@ int main(void) {
             // add command line to history
             if (currentHistoryIndex == historySize)
             {
-
-                for (size_t i = 0; i < currentHistoryIndex; i++)
-                {
-                    history[i] = history[i-1];
-                    continue; 
-                }     
-            
-                
+                currentHistoryIndex = 0;
             }
-            
+
             history[currentHistoryIndex] = strdup(input);
             currentHistoryIndex++;
             pChr = strtok(input, " \t|><&;");
