@@ -22,7 +22,7 @@ int main(void) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
-    char **history[20];
+    char *history[20];
     int currentHistoryIndex = 0;
 
     while (1) {
@@ -55,10 +55,10 @@ int main(void) {
         // did we type a history command
         if (historyNumber != 0) {
             // tokenize from history entry
-            pChr = *history[historyNumber - 1];
+            pChr = history[historyNumber - 1];
         } else {
             // add command line to history
-            *history[currentHistoryIndex] = strdup(input);
+            history[currentHistoryIndex] = strdup(input);
             currentHistoryIndex++;
             //tokenize input from command line
             pChr = strtok(input, " \t|><&;");
