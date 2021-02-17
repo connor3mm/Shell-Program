@@ -55,7 +55,7 @@ int main(void) {
         // did we type a history command
         if (historyNumber != 0) {
             // tokenize from history entry
-            pChr = *history[historyNumber - 1];
+            pChr = history[historyNumber - 1];
         } else {
             // add command line to history
             history[currentHistoryIndex] = strdup(input);
