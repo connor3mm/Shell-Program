@@ -8,7 +8,6 @@
 #include <string.h>
 #include <sys/wait.h>
 
-
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -23,10 +22,15 @@ int main(void) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
+
     char *history[20];
-    int front = 0;
-    int back = 0;
-    int historySize = 3;
+
+    for (size_t i = 0; i < 20; i++)
+    {
+        history[i] = NULL;
+    }
+    
+    int historySize = 20;
     int currentHistoryIndex = 0;
 
     while (1) {
@@ -43,13 +47,8 @@ int main(void) {
         // Check if it's a history command
         int historyNumber = 0;
         if (input[0] == '!' && strlen(input) > 1) {
-            if(input[1] == '!') {
-                historyNumber = currentHistoryIndex;
-            }
-            else {
-                // convert string after ! to integer
-                historyNumber = (int) strtol(input + 1, NULL, 10);
-            }
+            // convert string after ! to integer
+            historyNumber = (int) strtol(input + 1, NULL, 10);
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
@@ -65,8 +64,17 @@ int main(void) {
         // did we type a history command
         if (historyNumber != 0) {
             // tokenize from history entry
-            pChr = history[historyNumber - 1];
+            if (history[historyNumber] == NULL)
+            {
+                printf("Invalid history number.\n");
+                continue;
+            } else {
+                pChr = strtok(history[historyNumber - 1], " \t|><&;");
+                
+            }
+        
         } else {
+
             // add command line to history
             if (currentHistoryIndex == historySize)
             {
@@ -81,6 +89,7 @@ int main(void) {
         if (pChr == NULL) { // not even one token (empty command line)
             continue;
         }
+
         int index = 0;
         while (pChr != NULL) {
             if (index >= 50) {
