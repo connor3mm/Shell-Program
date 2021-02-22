@@ -47,7 +47,7 @@ int main(void) {
             }
             else if(input[1] == '!') {
                 historyNumber = currentHistoryIndex;
-            } else if (input[1] == '-')
+            } else if (input[1] == '-' && strlen(input) < 5)
             {
                 if (strlen(input) > 3 && (input[2] - '0' > 0) && ((input[2] - '0') < currentHistoryIndex -1 )) {
                     printf("Invalid input\n");
@@ -58,6 +58,7 @@ int main(void) {
 
                 historyNumber = currentHistoryIndex - num;
             }
+
             else {
                 // convert string after ! to integer
                 historyNumber = (int) strtol(input + 1, NULL, 10);
