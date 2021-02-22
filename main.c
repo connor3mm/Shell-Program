@@ -66,7 +66,7 @@ int main(void) {
         char *tokens[51];
         // treat all delimiters as command line argument separators according to the spec
         char *pChr;
-        // did we type a history command
+        // checking for a history command
         if (historyNumber != 0) {
             // tokenize from history entry
             pChr = history[historyNumber - 1];
