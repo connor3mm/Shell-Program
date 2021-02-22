@@ -41,7 +41,7 @@ int main(void) {
         // Check if it's a history command
         int historyNumber = 0;
         if (input[0] == '!' && strlen(input) > 1) {
-            if(strlen(input) > 2){
+            if(input[1] == '!' && strlen(input) > 2){
                 printf("Invalid input\n");
                 continue;
             }
