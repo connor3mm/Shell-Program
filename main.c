@@ -24,8 +24,6 @@ int main(void) {
         }
     }
     char *history[20];
-    int front = 0;
-    int back = 0;
     int historySize = 3;
     int currentHistoryIndex = 0;
 
