@@ -9,8 +9,6 @@
 #include <sys/wait.h>
 
 
-#define HISTORY_LIMIT 4
-
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -45,8 +43,13 @@ int main(void) {
         // Check if it's a history command
         int historyNumber = 0;
         if (input[0] == '!' && strlen(input) > 1) {
-            // convert string after ! to integer
-            historyNumber = (int) strtol(input + 1, NULL, 10);
+            if(input[1] == '!') {
+                historyNumber = currentHistoryIndex;
+            }
+            else {
+                // convert string after ! to integer
+                historyNumber = (int) strtol(input + 1, NULL, 10);
+            }
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
@@ -63,22 +66,13 @@ int main(void) {
         if (historyNumber != 0) {
             // tokenize from history entry
             pChr = history[historyNumber - 1];
-        
         } else {
-
             // add command line to history
             if (currentHistoryIndex == historySize)
             {
-
-                for (size_t i = 0; i < currentHistoryIndex; i++)
-                {
-                    history[i] = history[i-1];
-                    continue; 
-                }     
-            
-                
+                currentHistoryIndex = 0;
             }
-            
+
             history[currentHistoryIndex] = strdup(input);
             currentHistoryIndex++;
             pChr = strtok(input, " \t|><&;");
