@@ -160,3 +160,4 @@ int main(void) {
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
+
