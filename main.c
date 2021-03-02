@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/wait.h>
 
+#define HISTORY_LIMIT 5
 
 int main(void) {
     // this should be 0 on successful run, 1 on error
@@ -23,9 +24,10 @@ int main(void) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
-    char *history[20];
-    int historySize = 3;
-    int currentHistoryIndex = 0;
+    char *history[HISTORY_LIMIT];
+    int historySize = 0;
+    int currentHistoryIndex = 0; // back of queue
+    int oldestHistoryIndex = 0; // front of queue
 
     while (1) {
         print_display_prompt();
@@ -38,38 +40,56 @@ int main(void) {
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
-        // Check if it's a history command
-        int historyNumber = 0;
-        if (input[0] == '!' && strlen(input) > 1) {
-            if(input[1] == '!' && strlen(input) > 2){
-                printf("Invalid input\n");
-                continue;
-            }
-            else if(input[1] == '!') {
-                historyNumber = currentHistoryIndex;
-            } else if (input[1] == '-' && strlen(input) < 5)
-            {
-                if (strlen(input) > 3 && (input[2] - '0' > 0) && ((input[2] - '0') < currentHistoryIndex -1 )) {
-                    printf("Invalid input\n");
+        // history number selected by the user - can be positive or negative
+        int selectedHistoryNumber = 0;
+        // whether this is a history command
+        int isHistory = 0;
+        // check whether this is a history command starting with !
+        if (input[0] == '!') {
+
+            if(strlen(input) == 1) {
+                printf("! requires a numeric argument\n");
                     continue;
+            }
+
+            // !! - invoke last command
+            if(input[1] == '!') {
+                if(strlen(input) > 2){
+                    printf("Invalid input after !!\n");
+                    continue;
+                } else {
+                    // same as saying !-1 to get the last one
+                    strcpy(input, "!-1");
                 }
-
-                int num = input[2] - '0';
-
-                historyNumber = currentHistoryIndex - num;
             }
-
-            else {
-                // convert string after ! to integer
-                historyNumber = (int) strtol(input + 1, NULL, 10);
-            }
-            
+            // !{number} - invoke command at index
+            // get the number after ! first
+            selectedHistoryNumber = (int) strtol(input + 1, NULL, 10);
+            // check whether number parsing was successful
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
-            } else if (historyNumber < 1 || historyNumber > 20) {
-                printf("Invalid history number, history entries range from 1 to 20\n");
+            }
+            // do not allow 0 or values bigger than current history size
+            if(selectedHistoryNumber == 0 || selectedHistoryNumber > historySize || selectedHistoryNumber < -historySize ) {
+                printf("Invalid history index\n");
                 continue;
+            }
+            isHistory = 1;
+            // check if number is positive and select index starting from oldestHistoryIndex
+            if(selectedHistoryNumber > 0) {
+                selectedHistoryNumber--;
+                selectedHistoryNumber = (oldestHistoryIndex + selectedHistoryNumber) % (HISTORY_LIMIT);
+            }
+            // in this case selectedHistoryNumber is definitely negative, select index in reverse starting from currentHistoryIndex
+            else {
+                int offsetFromLatest = currentHistoryIndex + selectedHistoryNumber;
+                if(offsetFromLatest < 0) {
+                    // subtract remaining offset from the end of array
+                    selectedHistoryNumber = HISTORY_LIMIT + offsetFromLatest;
+                } else {
+                    selectedHistoryNumber = offsetFromLatest;
+                }
             }
         }
 
@@ -77,19 +97,32 @@ int main(void) {
         // treat all delimiters as command line argument separators according to the spec
         char *pChr;
         // checking for a history command
-        if (historyNumber != 0) {
+        if (isHistory) {
             // tokenize from history entry
-            pChr = history[historyNumber - 1];
+            // the strtok function modifies any input string by cutting out the tokens, so use input as temporary variable for strtok
+            strcpy(input, history[selectedHistoryNumber]);
+            pChr = strtok(input, " \t|><&;");
         } else {
             // add command line to history
-            if (currentHistoryIndex == historySize)
-            {
+            history[currentHistoryIndex] = strdup(input);
+            pChr = strtok(input, " \t|><&;");
+
+            currentHistoryIndex++;
+            // wrap around next item index
+            if (currentHistoryIndex == HISTORY_LIMIT) {
                 currentHistoryIndex = 0;
             }
-
-            history[currentHistoryIndex] = strdup(input);
-            currentHistoryIndex++;
-            pChr = strtok(input, " \t|><&;");
+            // history is full and has wrapped around - move oldest item index so we don't get the last one
+            if(currentHistoryIndex > oldestHistoryIndex && historySize == HISTORY_LIMIT) {
+                oldestHistoryIndex++;
+            }
+            if(oldestHistoryIndex == HISTORY_LIMIT) {
+                oldestHistoryIndex = 0;
+            }
+            // increase size
+            if(historySize != HISTORY_LIMIT) {
+                historySize++;
+            }
         }
 
         if (pChr == NULL) { // not even one token (empty command line)
@@ -160,4 +193,3 @@ int main(void) {
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
-
