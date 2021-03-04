@@ -26,7 +26,7 @@ int main(void) {
         }
     }
 
-    int historySize = 3;
+    int historySize = 20;
     int currentHistoryIndex = 0;
 
     while (1) {
