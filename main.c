@@ -8,9 +8,9 @@
 #include <string.h>
 #include <sys/wait.h>
 
+char *history[20];
 
-
-void saveHistory(char *history[20]);
+void saveHistory();
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -25,7 +25,7 @@ int main(void) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
-    char *history[20];
+
     int historySize = 3;
     int currentHistoryIndex = 0;
 
@@ -159,12 +159,12 @@ int main(void) {
             }
         }
     }
-    saveHistory(*history);
+    saveHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
 
-void saveHistory(char *history[20]){
+void saveHistory(){
     FILE *p;
     p = fopen(".hist_list", "w");
 
