@@ -14,6 +14,7 @@ void saveHistory();
 void loadHistory();
 
 int main(void) {
+    loadHistory();
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
 
@@ -162,7 +163,6 @@ int main(void) {
         }
     }
     saveHistory();
-    loadHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
