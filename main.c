@@ -9,6 +9,8 @@
 #include <sys/wait.h>
 
 
+
+void saveHistory(char *history[20]);
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -157,7 +159,24 @@ int main(void) {
             }
         }
     }
+    saveHistory(*history);
     setenv("PATH", currentPath, 1);
     return statusCode;
+}
+
+void saveHistory(char *history[20]){
+    FILE *p;
+    p = fopen(".hist_list", "w");
+
+    for(int i = 0; i < 20; i++) {
+        if(history[i] != NULL){
+            fputs(history[i], p);
+            fprintf(p, "\n");
+        } else {
+            break;
+        }
+    }
+    fclose(p);
+
 }
 
