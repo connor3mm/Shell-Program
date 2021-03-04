@@ -69,7 +69,7 @@ int main(void) {
                 // convert string after ! to integer
                 historyNumber = (int) strtol(input + 1, NULL, 10);
             }
-            
+
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
@@ -123,7 +123,15 @@ int main(void) {
                 continue;
             }
             printf("%s\n", getenv("PATH"));
-        } else if (!strcmp(tokens[0], "setpath")) {
+        }else if (!strcmp(tokens[0], "history")) {
+            int count = 0;
+            while(history[count + 1 ] != NULL) {
+                printf("%d %s\n", count + 1, history[count]);
+                count++;
+            }
+            continue;
+        }
+        else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
                 continue;
