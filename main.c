@@ -11,6 +11,8 @@
 char *history[20];
 
 void saveHistory();
+void loadHistory();
+
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -160,6 +162,7 @@ int main(void) {
         }
     }
     saveHistory();
+    loadHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
@@ -177,6 +180,32 @@ void saveHistory(){
         }
     }
     fclose(p);
+
+}
+
+void loadHistory(){
+    FILE *pFile;
+    pFile = fopen(".hist_list", "r");
+    if (pFile == NULL) {
+        printf("Error!! File does not exist!! ");
+
+    }
+    int count = 0;
+    char buffer[1000];
+    while(fgets(buffer, 1000, pFile) != NULL) {
+        size_t length = strlen(buffer);
+        if (length > 0 && buffer[length-1] == '\n') {
+            buffer[--length] = '\0';
+        }
+
+        char *string = malloc(sizeof(buffer));
+
+        strcpy(string, buffer);
+        history[count] = string;
+        count++;
+
+    }
+    fclose(pFile);
 
 }
 
