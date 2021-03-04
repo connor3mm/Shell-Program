@@ -14,7 +14,6 @@ void saveHistory();
 void loadHistory();
 
 int main(void) {
-    loadHistory();
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
 
@@ -31,6 +30,8 @@ int main(void) {
 
     int historySize = 20;
     int currentHistoryIndex = 0;
+
+    loadHistory();
 
     while (1) {
         print_display_prompt();
