@@ -188,8 +188,8 @@ void loadHistory(){
     FILE *pFile;
     pFile = fopen(".hist_list", "r");
     if (pFile == NULL) {
-        printf("Error!! File does not exist!! ");
-
+        printf("Error!! File does not exist!! \n");
+        return;
     }
     int count = 0;
     char buffer[1000];
