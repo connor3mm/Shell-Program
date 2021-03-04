@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 
 char *history[20];
+int currentHistoryIndex = 0;
 
 void saveHistory();
 void loadHistory();
@@ -29,7 +30,7 @@ int main(void) {
     }
 
     int historySize = 20;
-    int currentHistoryIndex = 0;
+
 
     loadHistory();
 
@@ -219,6 +220,7 @@ void loadHistory(){
         count++;
 
     }
+    currentHistoryIndex = count;
     fclose(pFile);
 
 }
