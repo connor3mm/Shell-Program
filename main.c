@@ -130,7 +130,7 @@ int main(void) {
             printf("%s\n", getenv("PATH"));
         }else if (!strcmp(tokens[0], "history")) {
             int count = 0;
-            while(history[count + 1 ] != NULL) {
+            while(history[count] != NULL) {
                 printf("%d %s\n", count + 1, history[count]);
                 count++;
             }
