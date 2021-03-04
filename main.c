@@ -74,7 +74,7 @@ int main(void) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
             } else if (historyNumber < 1 || historyNumber > 20) {
-                printf("Invalid history number, history entries range from 1 to 20\n");
+                printf("Invalid entry, history entries range from 1 to 20\n");
                 continue;
             }
         }
