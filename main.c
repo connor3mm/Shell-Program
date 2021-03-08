@@ -33,7 +33,7 @@ int main(void) {
         }
     }
 
-    // loadHistory();
+    loadHistory();
 
     while (1) {
         print_display_prompt();
@@ -159,12 +159,9 @@ int main(void) {
             }
             printf("%s\n", getenv("PATH"));
         }else if (!strcmp(tokens[0], "history")) {
-            int count = 0;
-            while(history[count] != NULL) {
-                printf("%d %s\n", count + 1, history[count]);
-                count++;
+            for(int i=0; i<currentHistorySize; i++) {
+                printf("%d %s\n", i+1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
-            continue;
         }
         else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
@@ -244,7 +241,8 @@ void loadHistory(){
         count++;
 
     }
-    currentHistoryIndex = count;
+    currentHistorySize = count;
+    currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
 
 }
