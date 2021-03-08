@@ -70,8 +70,13 @@ int main(void) {
             }
             // !{number} - invoke command at index
             // get the number after ! first
-            historyNumber = (int) strtol(input + 1, NULL, 10);
+            char* endPointer = NULL;
+            historyNumber = (int) strtol(input + 1, &endPointer, 10);
             // check whether number parsing was successful
+            if((*endPointer) != '\0') {
+                printf("Invalid history input\n");
+                continue;
+            }
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
