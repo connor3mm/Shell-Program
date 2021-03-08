@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 
 
-#define HISTORY_LIMIT 5
+#define HISTORY_LIMIT 20
 char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
 int currentHistoryIndex = 0;
@@ -223,7 +223,7 @@ void loadHistory(){
     FILE *pFile;
     pFile = fopen(".hist_list", "r");
     if (pFile == NULL) {
-        printf("Error!! File does not exist!! \n");
+        printf("History file not found.\n");
         return;
     }
     int count = 0;
