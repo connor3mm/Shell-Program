@@ -91,7 +91,7 @@ int main(void) {
         // checking for a history command
         if (historyNumber != 0) {
             // tokenize from history entry
-            pChr = history[historyNumber - 1];
+            strcpy(input, history[historyNumber - 1]);
         } else {
             // add command line to history
             if (currentHistoryIndex == historySize)
@@ -101,8 +101,8 @@ int main(void) {
 
             history[currentHistoryIndex] = strdup(input);
             currentHistoryIndex++;
-            pChr = strtok(input, " \t|><&;");
         }
+        pChr = strtok(input, " \t|><&;");
 
         if (pChr == NULL) { // not even one token (empty command line)
             continue;
