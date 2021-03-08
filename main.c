@@ -206,7 +206,7 @@ int main(void) {
             }
         }
     }
-    // saveHistory();
+    saveHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
@@ -214,14 +214,9 @@ int main(void) {
 void saveHistory(){
     FILE *p;
     p = fopen(".hist_list", "w");
-
-    for(int i = 0; i < 20; i++) {
-        if(history[i] != NULL){
-            fputs(history[i], p);
-            fprintf(p, "\n");
-        } else {
-            break;
-        }
+    for(int i=0; i<currentHistorySize; i++) {
+        fputs(history[(oldestHistoryIndex + i) % HISTORY_LIMIT], p);
+        fprintf(p, "\n");
     }
     fclose(p);
 
