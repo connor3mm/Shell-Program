@@ -14,9 +14,11 @@ char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
 int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
+const char *aliasCommands[10][2];
 
 void saveHistory();
 void loadHistory();
+void addAliases(char *name, char *command);
 
 int main(void) {
     // this should be 0 on successful run, 1 on error
@@ -118,7 +120,7 @@ int main(void) {
         } else {
             //check if the command is history
             if(!strcmp(input, "history")  && history[0] == NULL) {
-                printf("Nah mate.\n");
+                printf("There is not history commands to display.\n");
                 history[currentHistoryIndex] = strdup(input);
                 continue;
             }
@@ -181,6 +183,24 @@ int main(void) {
                 printf("%d %s\n", i+1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
         }
+
+
+
+
+
+        else if (!strcmp(tokens[0], "alias")) {
+            if(tokens[3] != NULL) {
+                printf("Error, alias can only take two argument.\n");
+                continue;
+            }
+            addAliases( tokens[1],tokens[2]);
+
+
+
+
+
+
+        }
         else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
@@ -190,7 +210,6 @@ int main(void) {
             } else {
                 setenv("PATH", tokens[1], 1);
             }
-
             continue;
         } else if (!strcmp(tokens[0], "cd")) {
             if (tokens[1] == NULL) {
@@ -262,6 +281,36 @@ void loadHistory(){
     currentHistorySize = count;
     currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
+
+}
+
+void addAliases(char *name, char *command){
+
+    for(int i = 0; i < 10; i++){
+        if(aliasCommands[i][0] == name) {
+            printf("%s\n",aliasCommands[i][0]);
+            printf("%s\n",aliasCommands[i][1]);
+            printf("%s",name);
+            printf("Nah mate!!!!!!!!!\n");
+            break;
+
+        }
+
+
+
+
+         else if(aliasCommands[i][0] == NULL) {
+            aliasCommands[i][0] = strdup(name);
+            aliasCommands[i][1] = strdup(command);
+            printf("%s\n",aliasCommands[i][0]);
+            printf("%s\n",aliasCommands[i][1]);
+            break;
+        }else {
+            printf("No empty alias available\n");
+            break;
+        }
+
+    }
 
 }
 
