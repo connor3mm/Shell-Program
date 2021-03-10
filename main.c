@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 
 
+
 #define HISTORY_LIMIT 20
 char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
@@ -16,9 +17,11 @@ int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
 const char *aliasCommands[10][2];
 
+
 void saveHistory();
 void loadHistory();
 void addAliases(char *name, char *command);
+
 
 int main(void) {
     // this should be 0 on successful run, 1 on error
@@ -41,6 +44,7 @@ int main(void) {
         print_display_prompt();
 
         char input[512];
+
         if (fgets(input, 512, stdin) == NULL) { // End of File (CTRL+D)
             printf("Exiting...\n");
             break;
@@ -53,6 +57,7 @@ int main(void) {
         int isHistoryCommand = 0;
 
         int historyNumber = 0;
+        
         // Check if it's a history command
         if (input[0] == '!') {
 
@@ -71,6 +76,7 @@ int main(void) {
                     strcpy(input, "!-1");
                 }
             }
+
             // !{number} - invoke command at index
             // get the number after ! first
             char* endPointer = NULL;
@@ -146,11 +152,13 @@ int main(void) {
             }
 
         }
+
         pChr = strtok(input, " \t|><&;");
 
         if (pChr == NULL) { // not even one token (empty command line)
             continue;
         }
+
         int index = 0;
         while (pChr != NULL) {
             if (index >= 50) {
@@ -161,6 +169,8 @@ int main(void) {
             pChr = strtok(NULL, " \t|><&;");
             index++;
         }
+
+
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
@@ -184,10 +194,6 @@ int main(void) {
             }
         }
 
-
-
-
-
         else if (!strcmp(tokens[0], "alias")) {
             if(tokens[3] != NULL) {
                 printf("Error, alias can only take two argument.\n");
@@ -195,13 +201,7 @@ int main(void) {
             }
             addAliases( tokens[1],tokens[2]);
 
-
-
-
-
-
-        }
-        else if (!strcmp(tokens[0], "setpath")) {
+        } else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
                 continue;
@@ -240,6 +240,8 @@ int main(void) {
             }
         }
     }
+
+
     saveHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
@@ -252,9 +254,11 @@ void saveHistory(){
         fputs(history[(oldestHistoryIndex + i) % HISTORY_LIMIT], p);
         fprintf(p, "\n");
     }
+
     fclose(p);
 
 }
+
 
 void loadHistory(){
     FILE *pFile;
@@ -278,11 +282,13 @@ void loadHistory(){
         count++;
 
     }
+
     currentHistorySize = count;
     currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
 
 }
+
 
 void addAliases(char *name, char *command){
     int count = 0;
