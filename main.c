@@ -43,6 +43,7 @@ int main(void) {
             printf("Exiting...\n");
             break;
         }
+
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
@@ -55,7 +56,7 @@ int main(void) {
 
             if(strlen(input) == 1) {
                 printf("! requires a numeric argument\n");
-                    continue;
+                continue;
             }
 
             // !! - invoke last command
@@ -94,7 +95,7 @@ int main(void) {
                 // start from the oldestHistoryIndex rather than 0
                 historyNumber = (oldestHistoryIndex + historyNumber) % (HISTORY_LIMIT);
             }
-            // in this case historyNumber is definitely negative
+                // in this case historyNumber is definitely negative
             else {
                 // subtract from current index
                 int offsetFromLatest = currentHistoryIndex + historyNumber;
@@ -164,6 +165,10 @@ int main(void) {
             }
             printf("%s\n", getenv("PATH"));
         }else if (!strcmp(tokens[0], "history")) {
+            if(tokens[1] != NULL) {
+                printf("Error, history can only take one argument.\n");
+                continue;
+            }
             for(int i=0; i<currentHistorySize; i++) {
                 printf("%d %s\n", i+1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
