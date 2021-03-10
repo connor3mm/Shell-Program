@@ -59,7 +59,7 @@ int main(void) {
         int isHistoryCommand = 0;
 
         int historyNumber = 0;
-        
+
         // Check if it's a history command
         if (input[0] == '!') {
 
@@ -308,7 +308,7 @@ void addAliases(char *name, char *command){
     int index = 0;
     while (aliasCommands[index][0] != NULL) {
         if (strcmp(aliasCommands[index][0], name) == 0) {
-            printf("This name already exists and cannot be used again.\n");
+            printf("Error: This name already exists and cannot be used again.\n");
             return;
         }
         index++;
