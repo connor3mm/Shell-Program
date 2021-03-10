@@ -116,6 +116,13 @@ int main(void) {
             // tokenize from history entry
             strcpy(input, history[historyNumber]);
         } else {
+            //check if the command is history
+            if(!strcmp(input, "history")  && history[0] == NULL) {
+                printf("Nah mate.\n");
+                history[currentHistoryIndex] = strdup(input);
+                continue;
+            }
+
             // add command line to history
             history[currentHistoryIndex] = strdup(input);
 
@@ -169,6 +176,7 @@ int main(void) {
                 printf("Error, history can only take one argument.\n");
                 continue;
             }
+
             for(int i=0; i<currentHistorySize; i++) {
                 printf("%d %s\n", i+1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
