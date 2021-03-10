@@ -285,32 +285,28 @@ void loadHistory(){
 }
 
 void addAliases(char *name, char *command){
-
-    for(int i = 0; i < 10; i++){
-        if(aliasCommands[i][0] == name) {
-            printf("%s\n",aliasCommands[i][0]);
-            printf("%s\n",aliasCommands[i][1]);
-            printf("%s",name);
-            printf("Nah mate!!!!!!!!!\n");
-            break;
-
+    int count = 0;
+    for (int i = 0; i < 10; ++i) {
+        if(aliasCommands[i][0] != NULL) {
+            count++;
         }
-
-
-
-
-         else if(aliasCommands[i][0] == NULL) {
-            aliasCommands[i][0] = strdup(name);
-            aliasCommands[i][1] = strdup(command);
-            printf("%s\n",aliasCommands[i][0]);
-            printf("%s\n",aliasCommands[i][1]);
-            break;
-        }else {
-            printf("No empty alias available\n");
-            break;
-        }
-
     }
 
+    if(count == 10) {
+        printf("Error, no more aliases available.\n");
+        return;
+    }
+
+    int index = 0;
+    while(aliasCommands[index][0] != NULL) {
+        if(strcmp(aliasCommands[index][0], name) == 0) {
+            printf("This name already exists and cannot be used again.\n");
+            return;
+        }
+        index++;
+    }
+
+    aliasCommands[index][0] = strdup(name);
+    aliasCommands[index][1] = strdup(command);
 }
 
