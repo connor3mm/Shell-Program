@@ -17,7 +17,9 @@ int oldestHistoryIndex = 0;
 const char *aliasCommands[10][2];
 
 void saveHistory();
+
 void loadHistory();
+
 void addAliases(char *name, char *command);
 
 int main(void) {
@@ -56,14 +58,14 @@ int main(void) {
         // Check if it's a history command
         if (input[0] == '!') {
 
-            if(strlen(input) == 1) {
+            if (strlen(input) == 1) {
                 printf("! requires a numeric argument\n");
                 continue;
             }
 
             // !! - invoke last command
-            if(input[1] == '!') {
-                if(strlen(input) > 2){
+            if (input[1] == '!') {
+                if (strlen(input) > 2) {
                     printf("Invalid input after !!\n");
                     continue;
                 } else {
@@ -73,10 +75,10 @@ int main(void) {
             }
             // !{number} - invoke command at index
             // get the number after ! first
-            char* endPointer = NULL;
+            char *endPointer = NULL;
             historyNumber = (int) strtol(input + 1, &endPointer, 10);
             // check whether number parsing was successful
-            if((*endPointer) != '\0') {
+            if ((*endPointer) != '\0') {
                 printf("Invalid history input\n");
                 continue;
             }
@@ -85,13 +87,13 @@ int main(void) {
                 continue;
             }
             // do not allow 0 or values bigger than current history size
-            if(historyNumber == 0 || historyNumber > currentHistorySize || historyNumber < -currentHistorySize ) {
+            if (historyNumber == 0 || historyNumber > currentHistorySize || historyNumber < -currentHistorySize) {
                 printf("Invalid history index\n");
                 continue;
             }
             isHistoryCommand = 1;
             // check if number is positive
-            if(historyNumber > 0) {
+            if (historyNumber > 0) {
                 // turn it into an index
                 historyNumber--;
                 // start from the oldestHistoryIndex rather than 0
@@ -101,7 +103,7 @@ int main(void) {
             else {
                 // subtract from current index
                 int offsetFromLatest = currentHistoryIndex + historyNumber;
-                if(offsetFromLatest < 0) {
+                if (offsetFromLatest < 0) {
                     // index has gone negative, wrap around from the end of the array
                     historyNumber = HISTORY_LIMIT + offsetFromLatest;
                 } else {
@@ -119,7 +121,7 @@ int main(void) {
             strcpy(input, history[historyNumber]);
         } else {
             //check if the command is history
-            if(!strcmp(input, "history")  && history[0] == NULL) {
+            if (!strcmp(input, "history") && history[0] == NULL) {
                 printf("There is not history commands to display.\n");
                 history[currentHistoryIndex] = strdup(input);
                 continue;
@@ -134,14 +136,14 @@ int main(void) {
                 currentHistoryIndex = 0;
             }
             // history is full and has wrapped around - move oldest item index so we don't get the last one when typing !1
-            if(currentHistoryIndex > oldestHistoryIndex && currentHistorySize == HISTORY_LIMIT) {
+            if (currentHistoryIndex > oldestHistoryIndex && currentHistorySize == HISTORY_LIMIT) {
                 oldestHistoryIndex++;
             }
-            if(oldestHistoryIndex == HISTORY_LIMIT) {
+            if (oldestHistoryIndex == HISTORY_LIMIT) {
                 oldestHistoryIndex = 0;
             }
             // increase size
-            if(currentHistorySize != HISTORY_LIMIT) {
+            if (currentHistorySize != HISTORY_LIMIT) {
                 currentHistorySize++;
             }
 
@@ -173,35 +175,24 @@ int main(void) {
                 continue;
             }
             printf("%s\n", getenv("PATH"));
-        }else if (!strcmp(tokens[0], "history")) {
-            if(tokens[1] != NULL) {
+        } else if (!strcmp(tokens[0], "history")) {
+            if (tokens[1] != NULL) {
                 printf("Error, history can only take one argument.\n");
                 continue;
             }
 
-            for(int i=0; i<currentHistorySize; i++) {
-                printf("%d %s\n", i+1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
+            for (int i = 0; i < currentHistorySize; i++) {
+                printf("%d %s\n", i + 1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
-        }
-
-
-
-
-
-        else if (!strcmp(tokens[0], "alias")) {
-            if(tokens[3] != NULL) {
+        } else if (!strcmp(tokens[0], "alias")) {
+            if (tokens[3] != NULL) {
                 printf("Error, alias can only take two argument.\n");
                 continue;
             }
-            addAliases( tokens[1],tokens[2]);
+            addAliases(tokens[1], tokens[2]);
 
 
-
-
-
-
-        }
-        else if (!strcmp(tokens[0], "setpath")) {
+        } else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
                 continue;
@@ -245,10 +236,10 @@ int main(void) {
     return statusCode;
 }
 
-void saveHistory(){
+void saveHistory() {
     FILE *p;
     p = fopen(".hist_list", "w");
-    for(int i=0; i<currentHistorySize; i++) {
+    for (int i = 0; i < currentHistorySize; i++) {
         fputs(history[(oldestHistoryIndex + i) % HISTORY_LIMIT], p);
         fprintf(p, "\n");
     }
@@ -256,7 +247,7 @@ void saveHistory(){
 
 }
 
-void loadHistory(){
+void loadHistory() {
     FILE *pFile;
     pFile = fopen(".hist_list", "r");
     if (pFile == NULL) {
@@ -265,9 +256,9 @@ void loadHistory(){
     }
     int count = 0;
     char buffer[1000];
-    while(fgets(buffer, 1000, pFile) != NULL) {
+    while (fgets(buffer, 1000, pFile) != NULL) {
         size_t length = strlen(buffer);
-        if (length > 0 && buffer[length-1] == '\n') {
+        if (length > 0 && buffer[length - 1] == '\n') {
             buffer[--length] = '\0';
         }
 
@@ -284,22 +275,22 @@ void loadHistory(){
 
 }
 
-void addAliases(char *name, char *command){
+void addAliases(char *name, char *command) {
     int count = 0;
     for (int i = 0; i < 10; ++i) {
-        if(aliasCommands[i][0] != NULL) {
+        if (aliasCommands[i][0] != NULL) {
             count++;
         }
     }
 
-    if(count == 10) {
+    if (count == 10) {
         printf("Error, no more aliases available.\n");
         return;
     }
 
     int index = 0;
-    while(aliasCommands[index][0] != NULL) {
-        if(strcmp(aliasCommands[index][0], name) == 0) {
+    while (aliasCommands[index][0] != NULL) {
+        if (strcmp(aliasCommands[index][0], name) == 0) {
             printf("This name already exists and cannot be used again.\n");
             return;
         }
@@ -308,5 +299,5 @@ void addAliases(char *name, char *command){
 
     aliasCommands[index][0] = strdup(name);
     aliasCommands[index][1] = strdup(command);
+    printf("Alias with name %s with command %s is added. \n", name, command);
 }
-
