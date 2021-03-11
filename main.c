@@ -26,7 +26,7 @@ void loadHistory();
 
 void addAliases(char ** tokens);
 
-void unAlias(char *command);
+void unAlias(char *name);
 
 void printAlias();
 
@@ -376,9 +376,9 @@ void addAliases(char ** tokens) {
         index++;
     }
 
-    int nextTokenIndex = 1;
-    while(tokens[nextTokenIndex] != NULL) {
-        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex]);
+    int nextTokenIndex = 0;
+    while(tokens[nextTokenIndex+1] != NULL) {
+        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex+1]);
         nextTokenIndex++;
     }
 
@@ -390,12 +390,12 @@ void addAliases(char ** tokens) {
 /*
  * Removing alias
  */
-void unAlias(char *command) {
+void unAlias(char *name) {
     int count = 0;
     int index = 0;
     while (index < 10) {
         if(aliasCommands[index][0] != NULL) {
-            if (strcmp(aliasCommands[index][1], command) == 0) {
+            if (strcmp(aliasCommands[index][0], name) == 0) {
                 aliasCommands[index][0] = NULL;
                 aliasCommands[index][1] = NULL;
 
@@ -408,7 +408,7 @@ void unAlias(char *command) {
     if(count == 0) {
         printf("The command you entered does not have an alias.\n");
     } else {
-        printf("Command %s has been removed %d times\n", command, count);
+        printf("Command %s has been removed %d times\n", name, count);
     }
 }
 
