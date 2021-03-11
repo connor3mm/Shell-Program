@@ -28,6 +28,8 @@ void addAliases(char *name, char *command);
 
 void unAlias(char *command);
 
+void printAlias();
+
 
 /*
  * Main programme
@@ -63,6 +65,9 @@ int main(void) {
 
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
+
+        //Check if command is an alias
+
 
         // boolean - whether this is a history command
         int isHistoryCommand = 0;
@@ -223,7 +228,13 @@ int main(void) {
 
             //Checking for Alias
         } else if (!strcmp(tokens[0], "alias")) {
-            if (tokens[3] != NULL) {
+            if(tokens[1] == NULL) {
+                printAlias();
+                continue;
+            } else if(tokens[1] != NULL && tokens[2] == NULL) {
+                printf("Error, alias can only take two arguments.\n");
+                continue;
+            }else if (tokens[3] != NULL) {
                 printf("Error, alias can only take two arguments.\n");
                 continue;
             }
@@ -237,10 +248,8 @@ int main(void) {
                 continue;
             }
             unAlias(tokens[1]);
-
-
-            //Setting path
         }
+            //Sets the path
         else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
@@ -395,5 +404,24 @@ void unAlias(char *command) {
         printf("The command you entered does not have an alias.\n");
     } else {
         printf("Command %s has been removed %d times\n", command, count);
+    }
+}
+
+/*
+ * Print list of aliases
+ */
+void printAlias() {
+    int count = 0;
+    int index = 0;
+    while (index < 10) {
+        if(aliasCommands[index][0] != NULL) {
+            printf("Index - %d, Name - %s, Command - %s\n", index, aliasCommands[index][0], aliasCommands[index][1]);
+            count++;
+        }
+        index++;
+    }
+
+    if(count == 0) {
+        printf("There are no aliases set.\n");
     }
 }
