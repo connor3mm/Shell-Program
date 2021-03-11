@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 
 
-
 #define HISTORY_LIMIT 20
 char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
@@ -18,6 +17,9 @@ int oldestHistoryIndex = 0;
 const char *aliasCommands[10][2];
 
 
+/*
+ * function defining
+ */
 void saveHistory();
 
 void loadHistory();
@@ -25,6 +27,9 @@ void loadHistory();
 void addAliases(char *name, char *command);
 
 
+/*
+ * Main programme
+ */
 int main(void) {
     // this should be 0 on successful run, 1 on error
     int statusCode = 0;
@@ -40,7 +45,9 @@ int main(void) {
         }
     }
 
+
     loadHistory();
+
 
     while (1) {
         print_display_prompt();
@@ -79,6 +86,7 @@ int main(void) {
                 }
             }
 
+
             // !{number} - invoke command at index
             // get the number after ! first
             char *endPointer = NULL;
@@ -92,12 +100,15 @@ int main(void) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
             }
+
             // do not allow 0 or values bigger than current history size
             if (historyNumber == 0 || historyNumber > currentHistorySize || historyNumber < -currentHistorySize) {
                 printf("Invalid history index\n");
                 continue;
             }
+
             isHistoryCommand = 1;
+
             // check if number is positive
             if (historyNumber > 0) {
                 // turn it into an index
@@ -105,6 +116,7 @@ int main(void) {
                 // start from the oldestHistoryIndex rather than 0
                 historyNumber = (oldestHistoryIndex + historyNumber) % (HISTORY_LIMIT);
             }
+
                 // in this case historyNumber is definitely negative
             else {
                 // subtract from current index
@@ -117,6 +129,7 @@ int main(void) {
                 }
             }
         }
+
 
         char *tokens[51];
         // treat all delimiters as command line argument separators according to the spec
@@ -155,6 +168,10 @@ int main(void) {
 
         }
 
+
+        /*
+         * splitting input with tokens
+         */
         pChr = strtok(input, " \t|><&;");
 
         if (pChr == NULL) { // not even one token (empty command line)
@@ -177,32 +194,41 @@ int main(void) {
         tokens[index] = NULL;
 
         // check for built-in commands before forking
+        //Check for exit
         if (!strcmp(tokens[0], "exit")) {
             break;
+
+
+            //Checking getpath
         } else if (!strcmp(tokens[0], "getpath")) {
             if (tokens[1] != NULL) {
                 printf("Error, getpath does not take any arguments.\n");
                 continue;
             }
             printf("%s\n", getenv("PATH"));
+
+
+            //Checking History
         } else if (!strcmp(tokens[0], "history")) {
             if (tokens[1] != NULL) {
                 printf("Error, history can only take one argument.\n");
                 continue;
             }
-
             for (int i = 0; i < currentHistorySize; i++) {
                 printf("%d %s\n", i + 1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
             }
-        }
 
-        else if (!strcmp(tokens[0], "alias")) {
-            if(tokens[3] != NULL) {
+
+            //Checking for Alias
+        } else if (!strcmp(tokens[0], "alias")) {
+            if (tokens[3] != NULL) {
                 printf("Error, alias can only take two argument.\n");
                 continue;
             }
-            addAliases( tokens[1],tokens[2]);
+            addAliases(tokens[1], tokens[2]);
 
+
+            //Setting path
         } else if (!strcmp(tokens[0], "setpath")) {
             if (tokens[2] != NULL) {
                 printf("Error, setpath can only take one argument.\n");
@@ -213,6 +239,9 @@ int main(void) {
                 setenv("PATH", tokens[1], 1);
             }
             continue;
+
+
+            //Checking for cd command
         } else if (!strcmp(tokens[0], "cd")) {
             if (tokens[1] == NULL) {
                 chdir(getenv("HOME"));
@@ -224,6 +253,9 @@ int main(void) {
                 printf("Error, cd only takes one argument\n");
                 continue;
             }
+
+
+            //Activating forking
         } else {
             int pid = fork();
             if (pid < 0) {
@@ -242,13 +274,18 @@ int main(void) {
             }
         }
     }
-
-
     saveHistory();
     setenv("PATH", currentPath, 1);
     return statusCode;
 }
 
+
+
+
+
+/*
+ * Saving history
+ */
 void saveHistory() {
     FILE *p;
     p = fopen(".hist_list", "w");
@@ -256,21 +293,25 @@ void saveHistory() {
         fputs(history[(oldestHistoryIndex + i) % HISTORY_LIMIT], p);
         fprintf(p, "\n");
     }
-
     fclose(p);
-
 }
 
 
-void loadHistory(){
+/*
+ * Loading history from file to history array
+ */
+void loadHistory() {
     FILE *pFile;
+
     pFile = fopen(".hist_list", "r");
     if (pFile == NULL) {
         printf("History file not found.\n");
         return;
     }
+
     int count = 0;
     char buffer[1000];
+
     while (fgets(buffer, 1000, pFile) != NULL) {
         size_t length = strlen(buffer);
         if (length > 0 && buffer[length - 1] == '\n') {
@@ -284,15 +325,16 @@ void loadHistory(){
         count++;
 
     }
-
     currentHistorySize = count;
     currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
-
 }
 
 
-void addAliases(char *name, char *command){
+/*
+ * Adding alias
+ */
+void addAliases(char *name, char *command) {
     int count = 0;
     for (int i = 0; i < 10; ++i) {
         if (aliasCommands[i][0] != NULL) {
