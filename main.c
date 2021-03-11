@@ -14,7 +14,7 @@ char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
 int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
-const char *aliasCommands[10][2];
+const char *aliasCommands[10][50];
 
 
 /*
@@ -24,7 +24,7 @@ void saveHistory();
 
 void loadHistory();
 
-void addAliases(char *name, char *command);
+void addAliases(char ** tokens);
 
 void unAlias(char *command);
 
@@ -232,13 +232,10 @@ int main(void) {
                 printAlias();
                 continue;
             } else if(tokens[1] != NULL && tokens[2] == NULL) {
-                printf("Error, alias can only take two arguments.\n");
-                continue;
-            }else if (tokens[3] != NULL) {
-                printf("Error, alias can only take two arguments.\n");
+                printf("Error, alias needs at least one argument.\n");
                 continue;
             }
-            addAliases(tokens[1], tokens[2]);
+            addAliases(tokens);
 
 
             //Removing alias
@@ -355,7 +352,9 @@ void loadHistory() {
 /*
  * Adding alias
  */
-void addAliases(char *name, char *command) {
+void addAliases(char ** tokens) {
+    char* name = tokens[0];
+    
     int count = 0;
     for (int i = 0; i < 10; ++i) {
         if (aliasCommands[i][0] != NULL) {
@@ -377,9 +376,15 @@ void addAliases(char *name, char *command) {
         index++;
     }
 
-    aliasCommands[index][0] = strdup(name);
-    aliasCommands[index][1] = strdup(command);
-    printf("Alias with name %s with command %s is added. \n", name, command);
+    int nextTokenIndex = 1;
+    while(tokens[nextTokenIndex] != NULL) {
+        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex]);
+        nextTokenIndex++;
+    }
+
+    // aliasCommands[index][0] = strdup(name);
+    // aliasCommands[index][1] = strdup(command);
+    // printf("Alias with name %s with command %s is added. \n", name, command);
 }
 
 /*
