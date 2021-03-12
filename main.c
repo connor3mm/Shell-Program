@@ -24,13 +24,21 @@ void saveHistory();
 
 void loadHistory();
 
-void addAliases(char ** tokens);
+void addAliases(char **tokens);
 
 void unAlias(char *name);
 
 void printAlias();
 
 void run();
+
+void getPath(char *pString[51]);
+
+void setPath(char *pString[51]);
+
+void getHistory(char *pString[51]);
+
+void setCd(char *pString[51]);
 
 /*
  * Main programme
@@ -216,22 +224,14 @@ void run() {
 
             //Checking getpath
         } else if (!strcmp(tokens[0], "getpath")) {
-            if (tokens[1] != NULL) {
-                printf("Error, getpath does not take any arguments.\n");
-                continue;
-            }
-            printf("%s\n", getenv("PATH"));
+            getPath(tokens);
+
 
 
             //Checking History
         } else if (!strcmp(tokens[0], "history")) {
-            if (tokens[1] != NULL) {
-                printf("Error, history can only take one argument.\n");
-                continue;
-            }
-            for (int i = 0; i < currentHistorySize; i++) {
-                printf("%d %s\n", i + 1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
-            }
+            getHistory(tokens);
+
 
 
             //Checking for Alias
@@ -254,31 +254,17 @@ void run() {
             }
             unAlias(tokens[1]);
         }
+
+
             //Sets the path
         else if (!strcmp(tokens[0], "setpath")) {
-            if (tokens[2] != NULL) {
-                printf("Error, setpath can only take one argument.\n");
-                continue;
-            } else if (tokens[1] == NULL) {
-                printf("Error, setpath requires an argument.\n");
-            } else {
-                setenv("PATH", tokens[1], 1);
-            }
+            setPath(tokens);
             continue;
 
 
             //Checking for cd command
         } else if (!strcmp(tokens[0], "cd")) {
-            if (tokens[1] == NULL) {
-                chdir(getenv("HOME"));
-            } else if (tokens[2] == NULL) {
-                if (chdir(tokens[1]) == -1) {
-                    printf("Error: %s %s\n", tokens[1], strerror(errno));
-                }
-            } else if (tokens[2] != NULL) {
-                printf("Error, cd only takes one argument\n");
-                continue;
-            }
+            setCd(tokens);
 
 
             //Activating forking
@@ -303,7 +289,53 @@ void run() {
 
 }
 
+void setCd(char *tokens[51]) {
+    if (tokens[1] == NULL) {
+        chdir(getenv("HOME"));
+        return;
+    } else if (tokens[2] == NULL) {
+        if (chdir(tokens[1]) == -1) {
+            printf("Error: %s %s\n", tokens[1], strerror(errno));
+            return;
+        }
+    } else if (tokens[2] != NULL) {
+        printf("Error, cd only takes one argument\n");
+        return;
+    }
+}
 
+void getHistory(char *tokens[51]) {
+    if (tokens[1] != NULL) {
+        printf("Error, history can only take one argument.\n");
+        return;
+    }
+    for (int i = 0; i < currentHistorySize; i++) {
+        printf("%d %s\n", i + 1, history[(oldestHistoryIndex + i) % HISTORY_LIMIT]);
+    }
+}
+
+
+void setPath(char *tokens[51]) {
+    if (tokens[2] != NULL) {
+        printf("Error, setpath can only take one argument.\n");
+        return;
+    } else if (tokens[1] == NULL) {
+        printf("Error, setpath requires an argument.\n");
+        return;
+    } else {
+        setenv("PATH", tokens[1], 1);
+        return;
+    }
+}
+
+
+void getPath(char *tokens[51]) {
+    if (tokens[1] != NULL) {
+        printf("Error, getpath does not take any arguments.\n");
+        return;
+    }
+    printf("%s\n", getenv("PATH"));
+}
 
 
 /*
@@ -357,8 +389,8 @@ void loadHistory() {
 /*
  * Adding alias
  */
-void addAliases(char ** tokens) {
-    char* name = tokens[0];
+void addAliases(char **tokens) {
+    char *name = tokens[0];
 
     int count = 0;
     for (int i = 0; i < 10; ++i) {
@@ -382,8 +414,8 @@ void addAliases(char ** tokens) {
     }
 
     int nextTokenIndex = 0;
-    while(tokens[nextTokenIndex+1] != NULL) {
-        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex+1]);
+    while (tokens[nextTokenIndex + 1] != NULL) {
+        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
         nextTokenIndex++;
     }
 
@@ -399,7 +431,7 @@ void unAlias(char *name) {
     int count = 0;
     int index = 0;
     while (index < 10) {
-        if(aliasCommands[index][0] != NULL) {
+        if (aliasCommands[index][0] != NULL) {
             if (strcmp(aliasCommands[index][0], name) == 0) {
                 aliasCommands[index][0] = NULL;
                 aliasCommands[index][1] = NULL;
@@ -410,7 +442,7 @@ void unAlias(char *name) {
         index++;
     }
 
-    if(count == 0) {
+    if (count == 0) {
         printf("The command you entered does not have an alias.\n");
     } else {
         printf("Command %s has been removed %d times\n", name, count);
@@ -424,14 +456,14 @@ void printAlias() {
     int count = 0;
     int index = 0;
     while (index < 10) {
-        if(aliasCommands[index][0] != NULL) {
+        if (aliasCommands[index][0] != NULL) {
             printf("Index - %d, Name - %s, Command - %s\n", index, aliasCommands[index][0], aliasCommands[index][1]);
             count++;
         }
         index++;
     }
 
-    if(count == 0) {
+    if (count == 0) {
         printf("There are no aliases set.\n");
     }
 }
