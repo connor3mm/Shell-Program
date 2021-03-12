@@ -190,8 +190,7 @@ void run() {
 
         }
 
-        // ssplitting input with tokens
-         
+        // splitting input with tokens
         pChr = strtok(input, " \t|><&;");
 
         if (pChr == NULL) { // not even one token (empty command line)
@@ -211,6 +210,25 @@ void run() {
 
         // add null terminator as required by execvp
         tokens[index] = NULL;
+
+        // check if the command is an alias and if it is use the corresponding command
+        int aliasIndex = 0; 
+        while (aliasIndex < 10) { 
+            if (aliasCommands[aliasIndex][0] != NULL) 
+            { 
+                if (!strcmp(tokens[0],aliasCommands[aliasIndex][0]))
+                {
+                    tokens[0] = aliasCommands[aliasIndex][1];
+                    printf("%s",tokens[0]);
+                    break;
+                }
+                
+            } 
+            
+            aliasIndex++; 
+       
+        }
+        
 
         // check for built-in commands before forking
         //Check for exit
