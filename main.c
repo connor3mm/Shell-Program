@@ -30,6 +30,7 @@ void unAlias(char *name);
 
 void printAlias();
 
+void run();
 
 /*
  * Main programme
@@ -39,9 +40,8 @@ int main(void) {
     int statusCode = 0;
 
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
+    char *homeDirectory = getenv("HOME"); //Get the home directory
 
-    //Get the home directory
-    char *homeDirectory = getenv("HOME");
     if (homeDirectory != NULL) {
         // Change to home directory
         if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
@@ -51,8 +51,16 @@ int main(void) {
 
 
     loadHistory();
+    run();
+    saveHistory();
+    setenv("PATH", currentPath, 1);
+    return statusCode;
 
+}
 
+void run() {
+
+    int statusCode = 0;
     while (1) {
         print_display_prompt();
 
@@ -228,10 +236,10 @@ int main(void) {
 
             //Checking for Alias
         } else if (!strcmp(tokens[0], "alias")) {
-            if(tokens[1] == NULL) {
+            if (tokens[1] == NULL) {
                 printAlias();
                 continue;
-            } else if(tokens[1] != NULL && tokens[2] == NULL) {
+            } else if (tokens[1] != NULL && tokens[2] == NULL) {
                 printf("Error, alias needs at least one argument.\n");
                 continue;
             }
@@ -292,11 +300,8 @@ int main(void) {
             }
         }
     }
-    saveHistory();
-    setenv("PATH", currentPath, 1);
-    return statusCode;
-}
 
+}
 
 
 
@@ -354,7 +359,7 @@ void loadHistory() {
  */
 void addAliases(char ** tokens) {
     char* name = tokens[0];
-    
+
     int count = 0;
     for (int i = 0; i < 10; ++i) {
         if (aliasCommands[i][0] != NULL) {
