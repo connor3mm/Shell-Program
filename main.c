@@ -32,21 +32,22 @@ void printAlias();
 
 void run();
 
+void changeToHomeDirectory(const char *homeDirectory);
+
+void tokenizeInput(char *input, char **tokens, char *pChr);
+
 void getPath(char *tokens[51]);
 
 void setPath(char *tokens[51]);
 
-void getHistory(char *tokens[51]);
-
 void setCd(char *tokens[51]);
+
+void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber);
+
+void getHistory(char *tokens[51]);
 
 void getFork(char **tokens);
 
-void tokenizeInput(char *input, char **tokens, char *pChr);
-
-void changeToHomeDirectory(const char *homeDirectory);
-
-void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber);
 
 /*
  * Main programme
@@ -127,7 +128,6 @@ void run() {
             if (currentHistorySize != HISTORY_LIMIT) {
                 currentHistorySize++;
             }
-
         }
 
 
@@ -148,11 +148,9 @@ void run() {
             getPath(tokens);
 
 
-
             //Checking History
         } else if (!strcmp(tokens[0], "history")) {
             getHistory(tokens);
-
 
 
             //Checking for Alias
@@ -193,9 +191,13 @@ void run() {
             getFork(tokens);
         }
     }
-
 }
 
+
+
+/*
+ * Start of functions
+ */
 void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber) {
     if (input[0] == '!') {
 
@@ -212,7 +214,6 @@ void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumb
                 strcpy(input, "!-1");
             }
         }
-
 
         // !{number} - invoke command at index
         // get the number after ! first
@@ -255,6 +256,10 @@ void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumb
     }
 }
 
+
+/*
+ * Changing to the home directory
+ */
 void changeToHomeDirectory(const char *homeDirectory) {
     if (homeDirectory != NULL) {
         // Change to home directory
@@ -264,6 +269,10 @@ void changeToHomeDirectory(const char *homeDirectory) {
     }
 }
 
+
+/*
+ * Tokenizing the input the user makes
+ */
 void tokenizeInput(char *input, char **tokens, char *pChr) {
     pChr = strtok(input, " \t|><&;");
 
@@ -285,6 +294,10 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     tokens[index] = NULL;
 }
 
+
+/*
+ * Creating the forking
+ */
 void getFork(char **tokens) {
     int statusCode;
     int pid = fork();
@@ -304,6 +317,7 @@ void getFork(char **tokens) {
     }
 }
 
+
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -318,6 +332,7 @@ void setCd(char *tokens[51]) {
         return;
     }
 }
+
 
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
@@ -439,6 +454,7 @@ void addAliases(char **tokens) {
     // printf("Alias with name %s with command %s is added. \n", name, command);
 }
 
+
 /*
  * Removing alias
  */
@@ -463,6 +479,7 @@ void unAlias(char *name) {
         printf("Command %s has been removed %d times\n", name, count);
     }
 }
+
 
 /*
  * Print list of aliases
