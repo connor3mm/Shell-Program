@@ -190,9 +190,8 @@ void run() {
 
         }
 
-        /*
-         * splitting input with tokens
-         */
+        // ssplitting input with tokens
+         
         pChr = strtok(input, " \t|><&;");
 
         if (pChr == NULL) { // not even one token (empty command line)
@@ -280,9 +279,8 @@ void run() {
 }
 
 
-/*
-* Functon definition for the cd command
-*/
+// Functon definition for the cd command
+
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -298,9 +296,8 @@ void setCd(char *tokens[51]) {
     }
 }
 
-/*
-* Definition for the history command
-*/
+// Definition for the history command
+
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, history can only take one argument.\n");
@@ -311,9 +308,8 @@ void getHistory(char *tokens[51]) {
     }
 }
 
-/*
-* Definition for the setpath command
-*/
+// Definition for the setpath command
+
 void setPath(char *tokens[51]) {
     if (tokens[2] != NULL) {
         printf("Error, setpath can only take one argument.\n");
@@ -327,9 +323,8 @@ void setPath(char *tokens[51]) {
     }
 }
 
-/*
-* Definition for getpath command
-*/
+// Definition for getpath command
+
 void getPath(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, getpath does not take any arguments.\n");
@@ -339,9 +334,8 @@ void getPath(char *tokens[51]) {
 }
 
 
-/*
- * Saving history
- */
+// Saving history
+
 void saveHistory() {
     FILE *p;
     p = fopen(".hist_list", "w");
@@ -353,9 +347,8 @@ void saveHistory() {
 }
 
 
-/*
- * Loading history from file to history array
- */
+// Loading history from file to history array
+
 void loadHistory() {
     FILE *pFile;
 
@@ -387,9 +380,7 @@ void loadHistory() {
 }
 
 
-/*
- * Adding alias
- */
+// Adding alias
 void addAliases(char **tokens) {
     char *name = tokens[0];
 
@@ -425,9 +416,7 @@ void addAliases(char **tokens) {
     // printf("Alias with name %s with command %s is added. \n", name, command);
 }
 
-/*
- * Removing alias
- */
+// Removing alias
 void unAlias(char *name) {
     int count = 0;
     int index = 0;
@@ -450,9 +439,7 @@ void unAlias(char *name) {
     }
 }
 
-/*
- * Print list of aliases
- */
+// Print list of aliases
 void printAlias() {
     int count = 0;
     int index = 0;
