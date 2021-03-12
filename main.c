@@ -18,7 +18,7 @@ const char *aliasCommands[10][50];
 
 
 /*
- * function defining
+ * function declarations    
  */
 void saveHistory();
 
@@ -67,7 +67,7 @@ int main(void) {
 
 }
 
-
+// main program
 void run() {
 
     int statusCode = 0;
@@ -196,6 +196,7 @@ void run() {
 
 }
 
+// check if the command is an history invocation
 void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber) {
     if (input[0] == '!') {
 
@@ -255,6 +256,7 @@ void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumb
     }
 }
 
+// change the current to path to HOME as to simulate a real shell
 void changeToHomeDirectory(const char *homeDirectory) {
     if (homeDirectory != NULL) {
         // Change to home directory
@@ -264,6 +266,7 @@ void changeToHomeDirectory(const char *homeDirectory) {
     }
 }
 
+// tokenizing the input from the user
 void tokenizeInput(char *input, char **tokens, char *pChr) {
     pChr = strtok(input, " \t|><&;");
 
@@ -285,6 +288,7 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     tokens[index] = NULL;
 }
 
+// running the commands using fork() and exec()
 void getFork(char **tokens) {
     int statusCode;
     int pid = fork();
@@ -304,6 +308,9 @@ void getFork(char **tokens) {
     }
 }
 
+/*
+ * Definition for the 'cd' command
+ */
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -319,6 +326,9 @@ void setCd(char *tokens[51]) {
     }
 }
 
+/*
+ * Definition for the 'history' command
+ */
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, history can only take one argument.\n");
@@ -330,6 +340,9 @@ void getHistory(char *tokens[51]) {
 }
 
 
+/*
+ * Definition for the 'setpath' command
+ */
 void setPath(char *tokens[51]) {
     if (tokens[2] != NULL) {
         printf("Error, setpath can only take one argument.\n");
@@ -344,6 +357,9 @@ void setPath(char *tokens[51]) {
 }
 
 
+/*
+ * Definition for the ''cd' command
+ */
 void getPath(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, getpath does not take any arguments.\n");
