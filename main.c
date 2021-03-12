@@ -109,7 +109,6 @@ void run() {
                 }
             }
 
-
             // !{number} - invoke command at index
             // get the number after ! first
             char *endPointer = NULL;
@@ -191,7 +190,6 @@ void run() {
 
         }
 
-
         /*
          * splitting input with tokens
          */
@@ -212,7 +210,6 @@ void run() {
             index++;
         }
 
-
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
@@ -221,17 +218,14 @@ void run() {
         if (!strcmp(tokens[0], "exit")) {
             break;
 
-
             //Checking getpath
         } else if (!strcmp(tokens[0], "getpath")) {
             getPath(tokens);
 
 
-
             //Checking History
         } else if (!strcmp(tokens[0], "history")) {
             getHistory(tokens);
-
 
 
             //Checking for Alias
@@ -245,7 +239,6 @@ void run() {
             }
             addAliases(tokens);
 
-
             //Removing alias
         } else if (!strcmp(tokens[0], "unalias")) {
             if (tokens[2] != NULL) {
@@ -255,17 +248,14 @@ void run() {
             unAlias(tokens[1]);
         }
 
-
             //Sets the path
         else if (!strcmp(tokens[0], "setpath")) {
             setPath(tokens);
             continue;
 
-
             //Checking for cd command
         } else if (!strcmp(tokens[0], "cd")) {
             setCd(tokens);
-
 
             //Activating forking
         } else {
@@ -289,6 +279,10 @@ void run() {
 
 }
 
+
+/*
+* Functon definition for the cd command
+*/
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -304,6 +298,9 @@ void setCd(char *tokens[51]) {
     }
 }
 
+/*
+* Definition for the history command
+*/
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, history can only take one argument.\n");
@@ -314,7 +311,9 @@ void getHistory(char *tokens[51]) {
     }
 }
 
-
+/*
+* Definition for the setpath command
+*/
 void setPath(char *tokens[51]) {
     if (tokens[2] != NULL) {
         printf("Error, setpath can only take one argument.\n");
@@ -328,7 +327,9 @@ void setPath(char *tokens[51]) {
     }
 }
 
-
+/*
+* Definition for getpath command
+*/
 void getPath(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, getpath does not take any arguments.\n");
