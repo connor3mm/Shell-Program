@@ -18,7 +18,7 @@ const char *aliasCommands[10][50];
 
 
 /*
- * function defining
+ * function declaration 
  */
 void saveHistory();
 
@@ -39,6 +39,10 @@ void setPath(char *pString[51]);
 void getHistory(char *pString[51]);
 
 void setCd(char *pString[51]);
+
+char* checkAlias(char *firstToken);
+
+void saveAliases();
 
 /*
  * Main programme
@@ -61,6 +65,7 @@ int main(void) {
     loadHistory();
     run();
     saveHistory();
+    saveAliases();
     setenv("PATH", currentPath, 1);
     return statusCode;
 
@@ -211,23 +216,7 @@ void run() {
         // add null terminator as required by execvp
         tokens[index] = NULL;
 
-        // check if the command is an alias and if it is use the corresponding command
-        int aliasIndex = 0; 
-        while (aliasIndex < 10) { 
-            if (aliasCommands[aliasIndex][0] != NULL) 
-            { 
-                if (!strcmp(tokens[0],aliasCommands[aliasIndex][0]))
-                {
-                    tokens[0] = aliasCommands[aliasIndex][1];
-                    printf("%s",tokens[0]);
-                    break;
-                }
-                
-            } 
-            
-            aliasIndex++; 
-       
-        }
+        tokens[0] = checkAlias(tokens[0]);
         
 
         // check for built-in commands before forking
@@ -296,6 +285,11 @@ void run() {
 
 }
 
+
+
+/*
+*  Functions definition below
+*/
 
 // Functon definition for the cd command
 
@@ -472,4 +466,48 @@ void printAlias() {
     if (count == 0) {
         printf("There are no aliases set.\n");
     }
+}
+
+// check if the command is an alias and if it is use the corresponding command
+char* checkAlias(char *firstToken) {
+
+    int aliasIndex = 0; 
+
+    while (aliasIndex < 10) { 
+        if (aliasCommands[aliasIndex][0] != NULL) 
+        { 
+            if (!strcmp(firstToken,aliasCommands[aliasIndex][0]))
+            {
+                firstToken = aliasCommands[aliasIndex][1];
+                printf("%s",firstToken);
+                break;
+            }
+            
+        } 
+        
+        aliasIndex++; 
+    
+    }
+
+    return firstToken;
+ 
+}
+
+// save aliases into file
+void saveAliases() {
+    FILE *a;
+    a = fopen(".aliases", "w");
+
+    int count = 0;
+    int index = 0;
+    while (index < 10) {
+        if (aliasCommands[index][0] != NULL) {
+            char *aliasLine = strcat(aliasCommands[index][0],aliasCommands[index][1]);
+            fputs(aliasLine,a);
+            count++;
+        }
+        index++;
+    }
+    fprintf(a, "\n");
+    fclose(a);
 }
