@@ -44,6 +44,8 @@ char* checkAlias(char *firstToken);
 
 void saveAliases();
 
+void loadAliases();
+
 /*
  * Main programme
  */
@@ -510,4 +512,50 @@ void saveAliases() {
     }
     fprintf(a, "\n");
     fclose(a);
+}
+
+
+void loadAliases() {
+    FILE *pFile;
+
+    pFile = fopen(".aliases", "r");
+
+    if (pFile == NULL) {
+        printf("Alias file not found.\n");
+        return;
+    }
+
+    int count = 0;
+    char buffer[1000];
+
+    while (fgets(buffer, 1000, pFile) != NULL) {
+        size_t length = strlen(buffer);
+
+        if (length > 0 && buffer[length - 1] == '\n') {
+            buffer[--length] = '\0';
+        }
+
+        char *string = malloc(sizeof(buffer));
+        strcpy(string, buffer);
+        printf("%s lmfoa",string);
+        // string = strtok(string, " ");
+        // string[0] = strdup(aliasCommands[count][0]);
+
+
+        // char* otherTokens;
+        // int nextTokenIndex = 1;
+        // while (string[nextTokenIndex] != NULL) {
+        //     // aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
+        //     // aliasCommands[count][nextTokenIndex] = string[nextTokenIndex];
+        //     otherTokens = strcat(" ",string[nextTokenIndex]);
+        //     nextTokenIndex++;
+        // }
+
+        // otherTokens = aliasCommands[count][1];
+        // count++;
+
+    }
+
+    fclose(pFile);
+
 }
