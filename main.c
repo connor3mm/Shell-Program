@@ -42,8 +42,6 @@ void setPath(char *tokens[51]);
 
 void setCd(char *tokens[51]);
 
-void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber);
-
 void getHistory(char *tokens[51]);
 
 void getFork(char **tokens);
@@ -91,7 +89,68 @@ void run() {
         int historyNumber = 0;
 
         // Check if it's a history command
-        checkForHistoryCommand(input, &isHistoryCommand, &historyNumber);
+        if (input[0] == '!') {
+
+            if (strlen(input) == 1) {
+                printf("! requires a numeric argument\n");
+                continue;
+            }
+
+            // !! - invoke last command
+            if (input[1] == '!') {
+                if (strlen(input) > 2) {
+                    printf("Invalid input after !!\n");
+                    continue;
+                } else {
+                    // same as saying !-1 to get the last one
+                    strcpy(input, "!-1");
+                }
+            }
+
+            // !{number} - invoke command at index
+            // get the number after ! first
+            char *endPointer = NULL;
+            historyNumber = (int) strtol(input + 1, &endPointer, 10);
+            // check whether number parsing was successful
+            if ((*endPointer) != '\0') {
+                printf("Invalid history input\n");
+                continue;
+            }
+            if (errno != 0) {
+                printf("Error: %s\n", strerror(errno));
+                continue;
+            }
+
+            // do not allow 0 or values bigger than current history size
+            if (historyNumber == 0 || historyNumber > currentHistorySize || historyNumber < -currentHistorySize) {
+                printf("Invalid history index\n");
+                continue;
+            }
+
+            isHistoryCommand = 1;
+
+            // check if number is positive
+            if (historyNumber > 0) {
+                // turn it into an index
+                historyNumber--;
+                // start from the oldestHistoryIndex rather than 0
+                historyNumber = (oldestHistoryIndex + historyNumber) % (HISTORY_LIMIT);
+            }
+
+                // in this case historyNumber is definitely negative
+            else {
+                // subtract from current index
+                int offsetFromLatest = currentHistoryIndex + historyNumber;
+                if (offsetFromLatest < 0) {
+                    // index has gone negative, wrap around from the end of the array
+                    historyNumber = HISTORY_LIMIT + offsetFromLatest;
+                } else {
+                    historyNumber = offsetFromLatest;
+                }
+            }
+        }
+
+
 
 
         char *tokens[51];
@@ -106,7 +165,7 @@ void run() {
             if (!strcmp(input, "history") && history[0] == NULL) {
                 printf("There is not history commands to display.\n");
                 history[currentHistoryIndex] = strdup(input);
-                continue;
+                //continue;
             }
 
             // add command line to history
@@ -193,81 +252,18 @@ void run() {
     }
 }
 
-<<<<<<< HEAD
 // check if the command is an history invocation
-=======
 
 
 /*
  * Start of functions
  */
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
-void checkForHistoryCommand(char *input, int *isHistoryCommand, int *historyNumber) {
-    if (input[0] == '!') {
 
-        if (strlen(input) == 1) {
-            printf("! requires a numeric argument\n");
-        }
 
-        // !! - invoke last command
-        if (input[1] == '!') {
-            if (strlen(input) > 2) {
-                printf("Invalid input after !!\n");
-            } else {
-                // same as saying !-1 to get the last one
-                strcpy(input, "!-1");
-            }
-        }
-
-        // !{number} - invoke command at index
-        // get the number after ! first
-        char *endPointer = NULL;
-        (*historyNumber) = (int) strtol(input + 1, &endPointer, 10);
-        // check whether number parsing was successful
-        if ((*endPointer) != '\0') {
-            printf("Invalid history input\n");
-        }
-        if (errno != 0) {
-            printf("Error: %s\n", strerror(errno));
-        }
-
-        // do not allow 0 or values bigger than current history size
-        if ((*historyNumber) == 0 || (*historyNumber) > currentHistorySize || (*historyNumber) < -currentHistorySize) {
-            printf("Invalid history index\n");
-        }
-
-        (*isHistoryCommand) = 1;
-
-        // check if number is positive
-        if ((*historyNumber) > 0) {
-            // turn it into an index
-            (*historyNumber)--;
-            // start from the oldestHistoryIndex rather than 0
-            (*historyNumber) = (oldestHistoryIndex + (*historyNumber)) % (HISTORY_LIMIT);
-        }
-
-            // in this case historyNumber is definitely negative
-        else {
-            // subtract from current index
-            int offsetFromLatest = currentHistoryIndex + (*historyNumber);
-            if (offsetFromLatest < 0) {
-                // index has gone negative, wrap around from the end of the array
-                (*historyNumber) = HISTORY_LIMIT + offsetFromLatest;
-            } else {
-                (*historyNumber) = offsetFromLatest;
-            }
-        }
-    }
-}
-
-<<<<<<< HEAD
-// change the current to path to HOME as to simulate a real shell
-=======
 
 /*
  * Changing to the home directory
  */
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
 void changeToHomeDirectory(const char *homeDirectory) {
     if (homeDirectory != NULL) {
         // Change to home directory
@@ -277,14 +273,11 @@ void changeToHomeDirectory(const char *homeDirectory) {
     }
 }
 
-<<<<<<< HEAD
-// tokenizing the input from the user
-=======
 
 /*
  * Tokenizing the input the user makes
  */
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
+
 void tokenizeInput(char *input, char **tokens, char *pChr) {
     pChr = strtok(input, " \t|><&;");
 
@@ -306,14 +299,11 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     tokens[index] = NULL;
 }
 
-<<<<<<< HEAD
-// running the commands using fork() and exec()
-=======
 
 /*
  * Creating the forking
  */
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
+
 void getFork(char **tokens) {
     int statusCode;
     int pid = fork();
@@ -333,13 +323,8 @@ void getFork(char **tokens) {
     }
 }
 
-<<<<<<< HEAD
-/*
- * Definition for the 'cd' command
- */
-=======
 
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
+
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -355,13 +340,7 @@ void setCd(char *tokens[51]) {
     }
 }
 
-<<<<<<< HEAD
-/*
- * Definition for the 'history' command
- */
-=======
 
->>>>>>> 2f9ae82d003f33911c529c2c9cc193c472c6263e
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, history can only take one argument.\n");
