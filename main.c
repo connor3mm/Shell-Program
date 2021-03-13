@@ -65,6 +65,7 @@ int main(void) {
 
 
     loadHistory();
+    loadAliases();
     run();
     saveHistory();
     saveAliases();
@@ -532,7 +533,7 @@ void loadAliases() {
         return;
     }
 
-    int count = 0;
+    int aliasIndex = 0;
     char buffer[1000];
 
     while (fgets(buffer, 1000, pFile) != NULL) {
@@ -544,25 +545,25 @@ void loadAliases() {
 
         char *string = malloc(sizeof(buffer));
         strcpy(string, buffer);
-        printf("%s lmfoa",string);
-        // string = strtok(string, " ");
-        // string[0] = strdup(aliasCommands[count][0]);
+        printf("%s \n",string);
 
+        char* pChr = strtok(string, " \t|><&;");
 
-        // char* otherTokens;
-        // int nextTokenIndex = 1;
-        // while (string[nextTokenIndex] != NULL) {
-        //     // aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
-        //     // aliasCommands[count][nextTokenIndex] = string[nextTokenIndex];
-        //     otherTokens = strcat(" ",string[nextTokenIndex]);
-        //     nextTokenIndex++;
-        // }
-
-        // otherTokens = aliasCommands[count][1];
-        // count++;
-
+        if (pChr == NULL) { // when it's an empty line
+            continue;
+        }
+        // parse alias line
+        int tokenIndex = 0;
+        while (pChr != NULL) {
+            if (tokenIndex >= 50) {
+                printf("Argument limit exceeded");
+                break;
+            }
+            aliasCommands[aliasIndex][tokenIndex] = strdup(pChr);
+            pChr = strtok(NULL, " \t|><&;");
+            tokenIndex++;
+        }
+        aliasIndex++;
     }
-
     fclose(pFile);
-
 }
