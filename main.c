@@ -500,17 +500,24 @@ void saveAliases() {
     FILE *a;
     a = fopen(".aliases", "w");
 
-    int count = 0;
-    int index = 0;
-    while (index < 10) {
-        if (aliasCommands[index][0] != NULL) {
-            char *aliasLine = strcat(aliasCommands[index][0],aliasCommands[index][1]);
-            fputs(aliasLine,a);
-            count++;
+    char aliasLine[512];
+
+    for(int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
+        if(aliasCommands[aliasIndex][0] == NULL) {
+            continue;
         }
-        index++;
+        int tokenIndex = 0;
+        while(aliasCommands[aliasIndex][tokenIndex] != NULL) {
+            strcat(aliasLine, aliasCommands[aliasIndex][tokenIndex]);
+            strcat(aliasLine, " ");
+            tokenIndex++;
+        }
+        // replace the last space with newline
+        aliasLine[strlen(aliasLine) - 1] = '\n';
+        fputs(aliasLine, a);
+        // Discard current line, otherwise the next strcat will append to it
+        aliasLine[0] = '\0';
     }
-    fprintf(a, "\n");
     fclose(a);
 }
 
