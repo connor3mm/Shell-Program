@@ -32,6 +32,10 @@ void printAlias();
 
 void run();
 
+void changeToHomeDirectory(const char *homeDirectory);
+
+void tokenizeInput(char *input, char **tokens, char *pChr);
+
 void getPath(char *pString[51]);
 
 void setPath(char *pString[51]);
@@ -46,6 +50,9 @@ void saveAliases();
 
 void loadAliases();
 
+void getFork(char **tokens);
+
+
 /*
  * Main programme
  */
@@ -56,13 +63,7 @@ int main(void) {
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
     char *homeDirectory = getenv("HOME"); //Get the home directory
 
-    if (homeDirectory != NULL) {
-        // Change to home directory
-        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
-            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
-        }
-    }
-
+    changeToHomeDirectory(homeDirectory);
 
     loadHistory();
     loadAliases();
@@ -71,9 +72,10 @@ int main(void) {
     saveAliases();
     setenv("PATH", currentPath, 1);
     return statusCode;
-
 }
 
+
+//Running of the program
 void run() {
 
     int statusCode = 0;
@@ -89,9 +91,6 @@ void run() {
 
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
-
-        //Check if command is an alias
-
 
         // boolean - whether this is a history command
         int isHistoryCommand = 0;
@@ -163,7 +162,7 @@ void run() {
 
         char *tokens[51];
         // treat all delimiters as command line argument separators according to the spec
-        char *pChr;
+        char *pChr = NULL;
         // checking for a history command
         if (isHistoryCommand) {
             // tokenize from history entry
@@ -173,7 +172,7 @@ void run() {
             if (!strcmp(input, "history") && history[0] == NULL) {
                 printf("There is not history commands to display.\n");
                 history[currentHistoryIndex] = strdup(input);
-                continue;
+                //continue;
             }
 
             // add command line to history
@@ -198,34 +197,17 @@ void run() {
 
         }
 
-        // splitting input with tokens
-        pChr = strtok(input, " \t|><&;");
 
-        if (pChr == NULL) { // not even one token (empty command line)
-            continue;
-        }
-
-        int index = 0;
-        while (pChr != NULL) {
-            if (index >= 50) {
-                printf("Argument limit exceeded");
-                break;
-            }
-            tokens[index] = pChr;
-            pChr = strtok(NULL, " \t|><&;");
-            index++;
-        }
-
-        // add null terminator as required by execvp
-        tokens[index] = NULL;
+        //splitting input with tokens
+        tokenizeInput(input, tokens, pChr);
 
         tokens[0] = checkAlias(tokens[0]);
-        
 
         // check for built-in commands before forking
         //Check for exit
         if (!strcmp(tokens[0], "exit")) {
             break;
+
 
             //Checking getpath
         } else if (!strcmp(tokens[0], "getpath")) {
@@ -248,6 +230,7 @@ void run() {
             }
             addAliases(tokens);
 
+
             //Removing alias
         } else if (!strcmp(tokens[0], "unalias")) {
             if (tokens[2] != NULL) {
@@ -257,45 +240,94 @@ void run() {
             unAlias(tokens[1]);
         }
 
+
             //Sets the path
         else if (!strcmp(tokens[0], "setpath")) {
             setPath(tokens);
             continue;
 
+
             //Checking for cd command
         } else if (!strcmp(tokens[0], "cd")) {
             setCd(tokens);
 
+
             //Activating forking
         } else {
-            int pid = fork();
-            if (pid < 0) {
-                printf("fork() failed\n");
-                statusCode = 1;
-                break;
-            } else if (pid == 0) { // child process
-                execvp(tokens[0], tokens);
-                // exec functions do not return if successful, this code is reached only due to errors
-                printf("Error: %s %s\n", tokens[0], strerror(errno));
-                statusCode = 1;
-                break;
-            } else { // parent process
-                int state;
-                waitpid(pid, &state, 0);
-            }
+            getFork(tokens);
         }
     }
-
 }
 
 
 
 /*
-*  Functions definition below
-*/
+ * Start of functions
+ */
 
-// Functon definition for the cd command
 
+/*
+ * Changing to the home directory
+ */
+void changeToHomeDirectory(const char *homeDirectory) {
+    if (homeDirectory != NULL) {
+        // Change to home directory
+        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
+            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
+        }
+    }
+}
+
+
+/*
+ * Tokenizing the input the user makes
+ */
+void tokenizeInput(char *input, char **tokens, char *pChr) {
+    pChr = strtok(input, " \t|><&;");
+    if (pChr == NULL) { // not even one token (empty command line)
+        return;
+    }
+    int index = 0;
+    while (pChr != NULL) {
+        if (index >= 50) {
+            printf("Argument limit exceeded");
+            return;
+        }
+        tokens[index] = pChr;
+        pChr = strtok(NULL, " \t|><&;");
+        index++;
+    }
+    // add null terminator as required by execvp
+    tokens[index] = NULL;
+}
+
+
+/*
+ * Creating the forking
+ */
+void getFork(char **tokens) {
+    int statusCode;
+    int pid = fork();
+    if (pid < 0) {
+        printf("fork() failed\n");
+        statusCode = 1;
+        return;
+    } else if (pid == 0) { // child process
+        execvp(tokens[0], tokens);
+        // exec functions do not return if successful, this code is reached only due to errors
+        printf("Error: %s %s\n", tokens[0], strerror(errno));
+        statusCode = 1;
+        return;
+    } else { // parent process
+        int state;
+        waitpid(pid, &state, 0);
+    }
+}
+
+
+/*
+ * Definition for the ''cd' command
+ */
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
         chdir(getenv("HOME"));
@@ -311,8 +343,10 @@ void setCd(char *tokens[51]) {
     }
 }
 
-// Definition for the history command
 
+/*
+ * Definition for the history command
+ */
 void getHistory(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, history can only take one argument.\n");
@@ -323,8 +357,10 @@ void getHistory(char *tokens[51]) {
     }
 }
 
-// Definition for the setpath command
 
+/*
+ * Definition for the setpath command
+ */
 void setPath(char *tokens[51]) {
     if (tokens[2] != NULL) {
         printf("Error, setpath can only take one argument.\n");
@@ -338,8 +374,10 @@ void setPath(char *tokens[51]) {
     }
 }
 
-// Definition for getpath command
 
+/*
+ * Definition for getpath command
+ */
 void getPath(char *tokens[51]) {
     if (tokens[1] != NULL) {
         printf("Error, getpath does not take any arguments.\n");
@@ -349,8 +387,9 @@ void getPath(char *tokens[51]) {
 }
 
 
-// Saving history
-
+/*
+ * Saving history
+ */
 void saveHistory() {
     FILE *p;
     p = fopen(".hist_list", "w");
@@ -362,8 +401,9 @@ void saveHistory() {
 }
 
 
-// Loading history from file to history array
-
+/*
+ * Loading history from file to history array
+ */
 void loadHistory() {
     FILE *pFile;
 
@@ -395,7 +435,9 @@ void loadHistory() {
 }
 
 
-// Adding alias
+/*
+* Adding alias
+*/
 void addAliases(char **tokens) {
     char *name = tokens[1];
 
@@ -431,7 +473,10 @@ void addAliases(char **tokens) {
     // printf("Alias with name %s with command %s is added. \n", name, command);
 }
 
-// Removing alias
+
+/*
+* Removing alias
+*/
 void unAlias(char *name) {
     int count = 0;
     int index = 0;
@@ -454,7 +499,11 @@ void unAlias(char *name) {
     }
 }
 
-// Print list of aliases
+
+
+/*
+ * Print list of aliases
+ */
 void printAlias() {
     int count = 0;
     int index = 0;
@@ -471,7 +520,10 @@ void printAlias() {
     }
 }
 
-// check if the command is an alias and if it is use the corresponding command
+
+/*
+ * check if the command is an alias and if it is use the corresponding command
+ */
 char* checkAlias(char *firstToken) {
 
     int aliasIndex = 0; 
@@ -485,18 +537,16 @@ char* checkAlias(char *firstToken) {
                 printf("%s",firstToken);
                 break;
             }
-            
-        } 
-        
-        aliasIndex++; 
-    
+        }
+        aliasIndex++;
     }
-
     return firstToken;
- 
 }
 
-// save aliases into file
+
+/*
+ * save aliases into file
+ */
 void saveAliases() {
     FILE *a;
     a = fopen(".aliases", "w");
@@ -523,6 +573,9 @@ void saveAliases() {
 }
 
 
+/*
+ * load aliases from file
+ */
 void loadAliases() {
     FILE *pFile;
 
@@ -552,6 +605,7 @@ void loadAliases() {
         if (pChr == NULL) { // when it's an empty line
             continue;
         }
+
         // parse alias line
         int tokenIndex = 0;
         while (pChr != NULL) {
