@@ -44,7 +44,7 @@ void getHistory(char *pString[51]);
 
 void setCd(char *pString[51]);
 
-char* checkAlias(char *firstToken);
+void checkAlias(char **tokens);
 
 void saveAliases();
 
@@ -201,7 +201,7 @@ void run() {
         //splitting input with tokens
         tokenizeInput(input, tokens, pChr);
 
-        tokens[0] = checkAlias(tokens[0]);
+        checkAlias(tokens); 
 
         // check for built-in commands before forking
         //Check for exit
@@ -524,23 +524,41 @@ void printAlias() {
 /*
  * check if the command is an alias and if it is use the corresponding command
  */
-char* checkAlias(char *firstToken) {
-
-    int aliasIndex = 0; 
-
-    while (aliasIndex < 10) { 
-        if (aliasCommands[aliasIndex][0] != NULL) 
-        { 
-            if (!strcmp(firstToken,aliasCommands[aliasIndex][0]))
-            {
-                firstToken = aliasCommands[aliasIndex][1];
-                printf("%s",firstToken);
-                break;
+void checkAlias(char **tokens) {
+    int tokenIndex = 0;
+    while(tokens[tokenIndex] != NULL ) {
+        for(int aliasIndex=0; aliasIndex<10; aliasIndex++) {
+            if(aliasCommands[aliasIndex][0] == NULL || tokens[tokenIndex] == NULL) {
+                continue;
+            }
+            if( !strcmp(tokens[tokenIndex], aliasCommands[aliasIndex][0])  ) {
+                // get number of tokens from alias
+                int aliasTokens = 0;
+                while(aliasCommands[aliasIndex][aliasTokens + 1] != NULL) 
+                    aliasTokens++;
+                int tokensLeft = 0;
+                while(tokens[tokenIndex + tokensLeft + 1] != NULL)
+                    tokensLeft++;
+                // move remaining tokens after alias into temp array so we don't lose them
+                char** tokensToShift = malloc(tokensLeft);
+                for(int i=0; i<tokensLeft; i++) {
+                    tokensToShift[i] = tokens[tokenIndex+1+i];
+                }
+                // move alias command tokens into input array, starting from the alias
+                for(int i=0; i<aliasTokens;i++) {
+                    tokens[tokenIndex + i] = aliasCommands[aliasIndex][1 + i];
+                }
+                // move tokens from temp array back to our main tokens array, starting after the alias command
+                for(int i=0; i<tokensLeft; i++) {
+                    tokens[tokenIndex + aliasTokens + i] = tokensToShift[i];
+                }
+                tokens[tokenIndex + aliasTokens + tokensLeft] = NULL;
+                free(tokensToShift);
+                tokenIndex = tokenIndex + aliasTokens;
             }
         }
-        aliasIndex++;
+        tokenIndex++;
     }
-    return firstToken;
 }
 
 
