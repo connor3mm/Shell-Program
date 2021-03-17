@@ -201,8 +201,6 @@ void run() {
         //splitting input with tokens
         tokenizeInput(input, tokens, pChr);
 
-        checkAlias(tokens); 
-
         // check for built-in commands before forking
         //Check for exit
         if (!strcmp(tokens[0], "exit")) {
@@ -212,12 +210,12 @@ void run() {
             //Checking getpath
         } else if (!strcmp(tokens[0], "getpath")) {
             getPath(tokens);
-
+            continue;
 
             //Checking History
         } else if (!strcmp(tokens[0], "history")) {
             getHistory(tokens);
-
+            continue;
 
             //Checking for Alias
         } else if (!strcmp(tokens[0], "alias")) {
@@ -229,7 +227,7 @@ void run() {
                 continue;
             }
             addAliases(tokens);
-
+            continue;
 
             //Removing alias
         } else if (!strcmp(tokens[0], "unalias")) {
@@ -238,11 +236,14 @@ void run() {
                 continue;
             }
             unAlias(tokens[1]);
+            continue;
         }
+
+        checkAlias(tokens); 
 
 
             //Sets the path
-        else if (!strcmp(tokens[0], "setpath")) {
+        if (!strcmp(tokens[0], "setpath")) {
             setPath(tokens);
             continue;
 
