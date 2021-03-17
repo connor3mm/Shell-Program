@@ -50,8 +50,6 @@ void saveAliases();
 
 void loadAliases();
 
-void getFork(char **tokens);
-
 
 /*
  * Main programme
@@ -76,15 +74,20 @@ int main(void) {
     run();
     saveHistory();
     saveAliases();
+
     setenv("PATH", currentPath, 1);
     return statusCode;
+  
 }
 
+
+ 
 
 //Running of the program
 void run() {
 
     int statusCode = 0;
+
     while (1) {
         print_display_prompt();
 
@@ -261,9 +264,38 @@ void run() {
 
             //Activating forking
         } else {
-            getFork(tokens);
+
+            int pid = fork();
+            if (pid < 0) {
+                printf("fork() failed\n");
+                statusCode = 1;
+                break;
+            } else if (pid == 0) { // child process
+                execvp(tokens[0], tokens);
+                // exec functions do not return if successful, this code is reached only due to errors
+                printf("Error: %s %s\n", tokens[0], strerror(errno));
+                statusCode = 1;
+                break;
+            } else { // parent processint pid = fork();
+            if (pid < 0) {
+                printf("fork() failed\n");
+                statusCode = 1;
+                break;
+            } else if (pid == 0) { // child process
+                execvp(tokens[0], tokens);
+                // exec functions do not return if successful, this code is reached only due to errors
+                printf("Error: %s %s\n", tokens[0], strerror(errno));
+                statusCode = 1;
+                break;
+            } else { // parent process
+                int state;
+                waitpid(pid, &state, 0);
+            }
+            }
+
         }
     }
+    
 }
 
 
@@ -308,28 +340,6 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     tokens[index] = NULL;
 }
 
-
-/*
- * Creating the forking
- */
-void getFork(char **tokens) {
-    int statusCode;
-    int pid = fork();
-    if (pid < 0) {
-        printf("fork() failed\n");
-        statusCode = 1;
-        return;
-    } else if (pid == 0) { // child process
-        execvp(tokens[0], tokens);
-        // exec functions do not return if successful, this code is reached only due to errors
-        printf("Error: %s %s\n", tokens[0], strerror(errno));
-        statusCode = 1;
-        return;
-    } else { // parent process
-        int state;
-        waitpid(pid, &state, 0);
-    }
-}
 
 
 /*
