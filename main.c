@@ -63,7 +63,13 @@ int main(void) {
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
     char *homeDirectory = getenv("HOME"); //Get the home directory
 
-    changeToHomeDirectory(homeDirectory);
+    //changeToHomeDirectory(homeDirectory);
+    if (homeDirectory != NULL) {
+        // Change to home directory
+        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
+            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
+        }
+    }
 
     loadHistory();
     loadAliases();
