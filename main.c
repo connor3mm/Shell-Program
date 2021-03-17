@@ -77,11 +77,9 @@ int main(void) {
 
     setenv("PATH", currentPath, 1);
     return statusCode;
-  
+
 }
 
-
- 
 
 //Running of the program
 void run() {
@@ -248,10 +246,10 @@ void run() {
             continue;
         }
 
-        checkAlias(tokens); 
+        checkAlias(tokens);
 
 
-            //Sets the path
+        //Sets the path
         if (!strcmp(tokens[0], "setpath")) {
             setPath(tokens);
             continue;
@@ -264,19 +262,7 @@ void run() {
 
             //Activating forking
         } else {
-
             int pid = fork();
-            if (pid < 0) {
-                printf("fork() failed\n");
-                statusCode = 1;
-                break;
-            } else if (pid == 0) { // child process
-                execvp(tokens[0], tokens);
-                // exec functions do not return if successful, this code is reached only due to errors
-                printf("Error: %s %s\n", tokens[0], strerror(errno));
-                statusCode = 1;
-                break;
-            } else { // parent processint pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
                 statusCode = 1;
@@ -291,11 +277,9 @@ void run() {
                 int state;
                 waitpid(pid, &state, 0);
             }
-            }
-
         }
+
     }
-    
 }
 
 
@@ -339,7 +323,6 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     // add null terminator as required by execvp
     tokens[index] = NULL;
 }
-
 
 
 /*
@@ -517,7 +500,6 @@ void unAlias(char *name) {
 }
 
 
-
 /*
  * Print list of aliases
  */
@@ -543,30 +525,30 @@ void printAlias() {
  */
 void checkAlias(char **tokens) {
     int tokenIndex = 0;
-    while(tokens[tokenIndex] != NULL ) {
-        for(int aliasIndex=0; aliasIndex<10; aliasIndex++) {
-            if(aliasCommands[aliasIndex][0] == NULL || tokens[tokenIndex] == NULL) {
+    while (tokens[tokenIndex] != NULL) {
+        for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
+            if (aliasCommands[aliasIndex][0] == NULL || tokens[tokenIndex] == NULL) {
                 continue;
             }
-            if( !strcmp(tokens[tokenIndex], aliasCommands[aliasIndex][0])  ) {
+            if (!strcmp(tokens[tokenIndex], aliasCommands[aliasIndex][0])) {
                 // get number of tokens from alias
                 int aliasTokens = 0;
-                while(aliasCommands[aliasIndex][aliasTokens + 1] != NULL) 
+                while (aliasCommands[aliasIndex][aliasTokens + 1] != NULL)
                     aliasTokens++;
                 int tokensLeft = 0;
-                while(tokens[tokenIndex + tokensLeft + 1] != NULL)
+                while (tokens[tokenIndex + tokensLeft + 1] != NULL)
                     tokensLeft++;
                 // move remaining tokens after alias into temp array so we don't lose them
-                char** tokensToShift = malloc(tokensLeft);
-                for(int i=0; i<tokensLeft; i++) {
-                    tokensToShift[i] = tokens[tokenIndex+1+i];
+                char **tokensToShift = malloc(tokensLeft);
+                for (int i = 0; i < tokensLeft; i++) {
+                    tokensToShift[i] = tokens[tokenIndex + 1 + i];
                 }
                 // move alias command tokens into input array, starting from the alias
-                for(int i=0; i<aliasTokens;i++) {
+                for (int i = 0; i < aliasTokens; i++) {
                     tokens[tokenIndex + i] = aliasCommands[aliasIndex][1 + i];
                 }
                 // move tokens from temp array back to our main tokens array, starting after the alias command
-                for(int i=0; i<tokensLeft; i++) {
+                for (int i = 0; i < tokensLeft; i++) {
                     tokens[tokenIndex + aliasTokens + i] = tokensToShift[i];
                 }
                 tokens[tokenIndex + aliasTokens + tokensLeft] = NULL;
@@ -588,12 +570,12 @@ void saveAliases() {
 
     char aliasLine[512];
 
-    for(int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
-        if(aliasCommands[aliasIndex][0] == NULL) {
+    for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
+        if (aliasCommands[aliasIndex][0] == NULL) {
             continue;
         }
         int tokenIndex = 0;
-        while(aliasCommands[aliasIndex][tokenIndex] != NULL) {
+        while (aliasCommands[aliasIndex][tokenIndex] != NULL) {
             strcat(aliasLine, aliasCommands[aliasIndex][tokenIndex]);
             strcat(aliasLine, " ");
             tokenIndex++;
@@ -633,9 +615,9 @@ void loadAliases() {
 
         char *string = malloc(sizeof(buffer));
         strcpy(string, buffer);
-        printf("%s \n",string);
+        printf("%s \n", string);
 
-        char* pChr = strtok(string, " \t|><&;");
+        char *pChr = strtok(string, " \t|><&;");
 
         if (pChr == NULL) { // when it's an empty line
             continue;
