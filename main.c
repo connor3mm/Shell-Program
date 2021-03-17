@@ -14,7 +14,7 @@ char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
 int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
-const char *aliasCommands[10][50];
+char *aliasCommands[10][50];
 
 
 /*
