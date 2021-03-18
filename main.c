@@ -34,7 +34,7 @@ void run();
 
 void changeToHomeDirectory(const char *homeDirectory);
 
-void tokenizeInput(char *input, char **tokens, char *pChr);
+int tokenizeInput(char *input, char **tokens, char *pChr);
 
 void getPath(char *pString[51]);
 
@@ -205,8 +205,10 @@ void run() {
         }
 
 
-        //splitting input with tokens
-        tokenizeInput(input, tokens, pChr);
+        //splitting input with tokens - don't go on if it fails
+        if( !tokenizeInput(input, tokens, pChr) ) {
+            continue;
+        }
 
         // check for built-in commands before forking
         //Check for exit
@@ -304,17 +306,18 @@ void changeToHomeDirectory(const char *homeDirectory) {
 
 /*
  * Tokenizing the input the user makes
+ * Return 0 on failure, 1 on success
  */
-void tokenizeInput(char *input, char **tokens, char *pChr) {
+int tokenizeInput(char *input, char **tokens, char *pChr) {
     pChr = strtok(input, " \t|><&;");
     if (pChr == NULL) { // not even one token (empty command line)
-        return;
+        return 0;
     }
     int index = 0;
     while (pChr != NULL) {
         if (index >= 50) {
             printf("Argument limit exceeded");
-            return;
+            return 0;
         }
         tokens[index] = pChr;
         pChr = strtok(NULL, " \t|><&;");
@@ -322,6 +325,7 @@ void tokenizeInput(char *input, char **tokens, char *pChr) {
     }
     // add null terminator as required by execvp
     tokens[index] = NULL;
+    return 1;
 }
 
 
