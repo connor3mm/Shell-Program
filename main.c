@@ -445,14 +445,16 @@ void loadHistory() {
 void addAliases(char **tokens) {
     char *name = tokens[1];
 
-    int count = 0;
+    int freeSlot = 0;
     for (int i = 0; i < 10; ++i) {
         if (aliasCommands[i][0] != NULL) {
-            count++;
+            freeSlot++;
+        } else {
+            break; // we've found an empty slot in the aliasCommands array!
         }
     }
 
-    if (count == 10) {
+    if (freeSlot == 10) {
         printf("Error, no more aliases available.\n");
         return;
     }
@@ -468,7 +470,7 @@ void addAliases(char **tokens) {
 
     int nextTokenIndex = 0;
     while (tokens[nextTokenIndex + 1] != NULL) {
-        aliasCommands[count][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
+        aliasCommands[freeSlot][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
         nextTokenIndex++;
     }
 
@@ -508,17 +510,23 @@ void unAlias(char *name) {
  * Print list of aliases
  */
 void printAlias() {
-    int count = 0;
-    int index = 0;
-    while (index < 10) {
-        if (aliasCommands[index][0] != NULL) {
-            printf("Index - %d, Name - %s, Command - %s\n", index, aliasCommands[index][0], aliasCommands[index][1]);
-            count++;
+    int aliasIndex = 0;
+    int aliasesFound = 0;
+    while (aliasIndex < 10) {
+        if (aliasCommands[aliasIndex][0] != NULL) {
+            aliasesFound++;
+            printf("Name: %s - Command: ", aliasCommands[aliasIndex][0] );
+            int aliasTokenIndex = 1;
+            while(aliasCommands[aliasIndex][aliasTokenIndex] != NULL) {
+                printf("%s ", aliasCommands[aliasIndex][aliasTokenIndex]);
+                aliasTokenIndex++;
+            }
+            printf("\n");
         }
-        index++;
+        aliasIndex++;
     }
 
-    if (count == 0) {
+    if (aliasesFound == 0) {
         printf("There are no aliases set.\n");
     }
 }
