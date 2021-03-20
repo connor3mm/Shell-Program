@@ -505,6 +505,26 @@ void addAliases(char **tokens) {
     alias->visited = 0;
     aliasList[freeSlot] = alias;
 
+    rebuildAliasLinks();
+    int loop = 0;
+    for(int i=0; i<10; i++) {
+        // reset flags
+        for(int i=0; i<10; i++) {
+            if(aliasList[i] != NULL) {
+                aliasList[i]->visited = 0;
+            }
+        }
+        if(aliasList[i] != NULL && checkAliasLoop(aliasList[i]))
+            loop = 1;
+    }
+
+    // If the definition we've added is causing a loop, remove it
+    if(loop) {
+        printf("Can't add alias, circular definition detected\n");
+        free(aliasList[freeSlot]);
+        aliasList[freeSlot] = NULL;
+        rebuildAliasLinks();
+    }
 }
 
 
@@ -526,6 +546,7 @@ void unAlias(char *name) {
     if(!removed) {
         printf("The alias you entered does not exist.\n");
     } else {
+        rebuildAliasLinks();
         printf("Alias successfully removed.\n");
     }
 }
@@ -558,15 +579,71 @@ void printAlias() {
     }
 }
 
+/*
+ * For each alias, go over the other aliases and build a list of any aliases it is using.
+ * This makes it easier to check for loops later.
+ */
+void linkAliases() {
+    for(int firstAlias=0; firstAlias<10; firstAlias++) {
+        // skip over empty slots
+    	if(aliasList[firstAlias] == NULL)
+    	    continue;
+        // skip over empty slots and the alias we're comparing
+    	for(int secondAlias=0; secondAlias<10; secondAlias++) {
+            if(aliasList[secondAlias] == NULL || firstAlias == secondAlias)
+                continue;
+            for(int token=0;token<aliasList[secondAlias]->numCommandTokens;token++) {
+                if( !strcmp(aliasList[firstAlias]->name, aliasList[secondAlias]->commandTokens[token]) ) {
+                    int numLinkedCommands = aliasList[secondAlias]->numLinkedCommands;
+                    aliasList[secondAlias]->linkedCommands[numLinkedCommands] = aliasList[firstAlias];
+                    aliasList[secondAlias]->numLinkedCommands++; 
+                }
+            }
+        }
+    }
+}
 
 /*
- * check if the command is an alias and if it is use the corresponding command
+ * Recursive function to check for loops - check every linked alias, and mark every node as visited
+ * If we meet a node we've already visited that means there's a loop. 
+ */
+int checkAliasLoop(Alias* current) {
+    current->visited = 1;
+    for(int i=0; i<current->numLinkedCommands; i++ ) {
+        if(!current->linkedCommands[i]->visited) {
+            if(checkAliasLoop(current->linkedCommands[i])) {
+                return 1;
+            }
+        } else {
+            return 1;
+        }
+
+    }
+    return 0;
+}
+
+/*
+ * Reset links for every alias, then call linkAliases to rebuild them.
+ * This ensures there are no empty slots in the linkedCommands array if we remove an alias.
+ */
+void rebuildAliasLinks() {
+    for(int i=0; i<10; i++) {
+        if(aliasList[i] != NULL) {
+            aliasList[i]->numLinkedCommands = 0;
+        }
+    }
+    linkAliases();
+}
+
+
+/*
+ * Keep swapping any alias with their command until there are no more substitutions
  */
 void checkAlias(char **tokens) {
     int tokenIndex = 0;
-    // int lastReplacedAliasTokens = 0;
     while (tokens[tokenIndex] != NULL) {
         int replacements = 0;
+        // check whether this token has an alias equivalent
         for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
             if (aliasList[aliasIndex] == NULL) {
                 continue;
@@ -594,11 +671,10 @@ void checkAlias(char **tokens) {
                 }
                 tokens[tokenIndex + aliasTokens + tokensLeft] = NULL;
                 free(tokensToShift);
-                // lastReplacedAliasTokens = aliasTokens;
-                // tokenIndex = tokenIndex + aliasTokens;
 
             }
         }
+        // no replacements were performed, check next token
         if(replacements == 0)
             tokenIndex++;
     }
@@ -672,6 +748,7 @@ void loadAliases() {
 
         // Store alias tokens into line
         char* line[50];
+
         int tokenIndex = 0;
         while (pChr != NULL) {
             if (tokenIndex >= 50) {
@@ -682,6 +759,7 @@ void loadAliases() {
             pChr = strtok(NULL, " \t|><&;");
             tokenIndex++;
         }
+
         // Use first token as name, the others as command tokens
         
         Alias* alias = malloc(sizeof(Alias));
@@ -698,6 +776,7 @@ void loadAliases() {
         alias->numLinkedCommands = 0;
         alias->visited = 0;
         aliasList[aliasIndex] = alias;
+
         aliasIndex++;
         if(tokenIndex < 2) { // alias file contained only one command on this line
             printf("Invalid alias detected in file\n");
@@ -706,5 +785,6 @@ void loadAliases() {
             aliasCommands[aliasIndex][tokenIndex] = NULL;
         }
     }
+    linkAliases();
     fclose(pFile);
 }
