@@ -14,8 +14,6 @@ char *history[HISTORY_LIMIT];
 int currentHistorySize = 0;
 int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
-char *aliasCommands[10][50];
-
 
 /*
  * function declaration 
@@ -445,6 +443,16 @@ void loadHistory() {
     fclose(pFile);
 }
 
+typedef struct Alias {
+    char* name;
+    char* commandTokens[50];
+    int numCommandTokens;
+    struct Alias* linkedCommands[10];
+    int numLinkedCommands;
+    // only used for detecting loops
+    int visited;
+} Alias;
+Alias* aliasList[10];
 
 /*
 * Adding alias
@@ -452,9 +460,10 @@ void loadHistory() {
 void addAliases(char **tokens) {
     char *name = tokens[1];
 
+    // Check if there's a free slot in our array of 10 aliases
     int freeSlot = 0;
     for (int i = 0; i < 10; ++i) {
-        if (aliasCommands[i][0] != NULL) {
+        if (aliasList[i] != NULL) {
             freeSlot++;
         } else {
             break; // we've found an empty slot in the aliasCommands array!
@@ -466,24 +475,36 @@ void addAliases(char **tokens) {
         return;
     }
 
-    int index = 0;
-    while (aliasCommands[index][0] != NULL) {
-        if (strcmp(aliasCommands[index][0], name) == 0) {
+    // Check for duplicate names
+    for(int i=0; i < 10; i++) {
+        if(aliasList[i] != NULL && !strcmp(aliasList[i]->name, name) ) {
             printf("Error: This name already exists and cannot be used again.\n");
             return;
         }
-        index++;
     }
 
+    // Create and add alias, using a persistent pointer with malloc.
+    Alias* alias = malloc(sizeof(Alias));
+    // Set the name
+    alias->name = strdup(name);
+    alias->numCommandTokens = 0;
+
     int nextTokenIndex = 0;
-    while (tokens[nextTokenIndex + 1] != NULL) {
-        aliasCommands[freeSlot][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
+    // copy command tokens starting from 2, since we have 'alias' at 0 and the name at 1
+    while (tokens[nextTokenIndex + 2] != NULL) {
+        if(!strcmp(name, tokens[nextTokenIndex + 2])) {
+            printf("Can't add alias, circular definition detected\n");
+            return;
+        }
+        alias->commandTokens[nextTokenIndex] = strdup(tokens[nextTokenIndex + 2]);
+        alias->numCommandTokens++;
         nextTokenIndex++;
     }
 
-    // aliasCommands[index][0] = strdup(name);
-    // aliasCommands[index][1] = strdup(command);
-    // printf("Alias with name %s with command %s is added. \n", name, command);
+    alias->numLinkedCommands = 0;
+    alias->visited = 0;
+    aliasList[freeSlot] = alias;
+
 }
 
 
@@ -491,24 +512,21 @@ void addAliases(char **tokens) {
 * Removing alias
 */
 void unAlias(char *name) {
-    int count = 0;
-    int index = 0;
-    while (index < 10) {
-        if (aliasCommands[index][0] != NULL) {
-            if (strcmp(aliasCommands[index][0], name) == 0) {
-                aliasCommands[index][0] = NULL;
-                aliasCommands[index][1] = NULL;
-
-                count++;
-            }
+    int removed = 0;
+    for(int i=0; i<10; i++) {
+        if( aliasList[i] != NULL && !strcmp(aliasList[i]->name, name) ) {
+            // free Alias pointer and set it to null
+            free(aliasList[i]);
+            aliasList[i] = NULL;
+            // set flag for the success message
+            removed = 1;
+            break;
         }
-        index++;
     }
-
-    if (count == 0) {
-        printf("The command you entered does not have an alias.\n");
+    if(!removed) {
+        printf("The alias you entered does not exist.\n");
     } else {
-        printf("Command %s has been removed %d times\n", name, count);
+        printf("Alias successfully removed.\n");
     }
 }
 
@@ -517,15 +535,17 @@ void unAlias(char *name) {
  * Print list of aliases
  */
 void printAlias() {
-    int aliasIndex = 0;
+    // How many aliases we've stored.
     int aliasesFound = 0;
+    // Current alias index
+    int aliasIndex = 0;
     while (aliasIndex < 10) {
-        if (aliasCommands[aliasIndex][0] != NULL) {
+        if (aliasList[aliasIndex] != NULL) {
             aliasesFound++;
-            printf("Name: %s - Command: ", aliasCommands[aliasIndex][0] );
-            int aliasTokenIndex = 1;
-            while(aliasCommands[aliasIndex][aliasTokenIndex] != NULL) {
-                printf("%s ", aliasCommands[aliasIndex][aliasTokenIndex]);
+            printf("Name: %s - Command: ", aliasList[aliasIndex]->name );
+            int aliasTokenIndex = 0;
+            for(int i=0; i<aliasList[aliasIndex]->numCommandTokens; i++) {
+                printf("%s ", aliasList[aliasIndex]->commandTokens[i]);
                 aliasTokenIndex++;
             }
             printf("\n");
@@ -544,27 +564,29 @@ void printAlias() {
  */
 void checkAlias(char **tokens) {
     int tokenIndex = 0;
+    // int lastReplacedAliasTokens = 0;
     while (tokens[tokenIndex] != NULL) {
+        int replacements = 0;
         for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
-            if (aliasCommands[aliasIndex][0] == NULL || tokens[tokenIndex] == NULL) {
+            if (aliasList[aliasIndex] == NULL) {
                 continue;
             }
-            if (!strcmp(tokens[tokenIndex], aliasCommands[aliasIndex][0])) {
+            if (!strcmp(tokens[tokenIndex], aliasList[aliasIndex]->name)) {
+                replacements++;
                 // get number of tokens from alias
-                int aliasTokens = 0;
-                while (aliasCommands[aliasIndex][aliasTokens + 1] != NULL)
-                    aliasTokens++;
+                int aliasTokens = aliasList[aliasIndex]->numCommandTokens;
+                // get number of tokens in input after the alias
                 int tokensLeft = 0;
                 while (tokens[tokenIndex + tokensLeft + 1] != NULL)
                     tokensLeft++;
-                // move remaining tokens after alias into temp array so we don't lose them
+                // move remaining tokens after alias into a temp array so we don't lose them
                 char **tokensToShift = malloc(tokensLeft);
                 for (int i = 0; i < tokensLeft; i++) {
                     tokensToShift[i] = tokens[tokenIndex + 1 + i];
                 }
                 // move alias command tokens into input array, starting from the alias
                 for (int i = 0; i < aliasTokens; i++) {
-                    tokens[tokenIndex + i] = aliasCommands[aliasIndex][1 + i];
+                    tokens[tokenIndex + i] = aliasList[aliasIndex]->commandTokens[i];
                 }
                 // move tokens from temp array back to our main tokens array, starting after the alias command
                 for (int i = 0; i < tokensLeft; i++) {
@@ -572,10 +594,13 @@ void checkAlias(char **tokens) {
                 }
                 tokens[tokenIndex + aliasTokens + tokensLeft] = NULL;
                 free(tokensToShift);
-                tokenIndex = tokenIndex + aliasTokens;
+                // lastReplacedAliasTokens = aliasTokens;
+                // tokenIndex = tokenIndex + aliasTokens;
+
             }
         }
-        tokenIndex++;
+        if(replacements == 0)
+            tokenIndex++;
     }
 }
 
@@ -590,14 +615,17 @@ void saveAliases() {
     char aliasLine[512];
 
     for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
-        if (aliasCommands[aliasIndex][0] == NULL) {
+        // Skip over empty slots in the array
+        if (aliasList[aliasIndex] == NULL) {
             continue;
         }
-        int tokenIndex = 0;
-        while (aliasCommands[aliasIndex][tokenIndex] != NULL) {
-            strcat(aliasLine, aliasCommands[aliasIndex][tokenIndex]);
+        // Copy name into output line
+        strcat(aliasLine, aliasList[aliasIndex]->name);
+        strcat(aliasLine, " ");
+        // Copy every token into output line, add a space after each one
+        for(int i=0; i<aliasList[aliasIndex]->numCommandTokens; i++) {
+            strcat(aliasLine, aliasList[aliasIndex]->commandTokens[i]);
             strcat(aliasLine, " ");
-            tokenIndex++;
         }
         // replace the last space with newline
         aliasLine[strlen(aliasLine) - 1] = '\n';
@@ -642,17 +670,34 @@ void loadAliases() {
             continue;
         }
 
-        // parse alias line
+        // Store alias tokens into line
+        char* line[50];
         int tokenIndex = 0;
         while (pChr != NULL) {
             if (tokenIndex >= 50) {
                 printf("Argument limit exceeded");
                 break;
             }
-            aliasCommands[aliasIndex][tokenIndex] = strdup(pChr);
+            line[tokenIndex] = strdup(pChr);
             pChr = strtok(NULL, " \t|><&;");
             tokenIndex++;
         }
+        // Use first token as name, the others as command tokens
+        
+        Alias* alias = malloc(sizeof(Alias));
+        // set the name to the 0th token
+        alias->name = strdup(line[0]);
+
+        alias->numCommandTokens = 0;
+        // skip over 0th token, which is the name
+        for(int i=0; i<tokenIndex - 1; i++) {
+            alias->commandTokens[i] = line[i+1];
+            alias->numCommandTokens++;
+        }
+
+        alias->numLinkedCommands = 0;
+        alias->visited = 0;
+        aliasList[aliasIndex] = alias;
         aliasIndex++;
         if(tokenIndex < 2) { // alias file contained only one command on this line
             printf("Invalid alias detected in file\n");
