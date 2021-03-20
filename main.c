@@ -15,6 +15,17 @@ int currentHistorySize = 0;
 int currentHistoryIndex = 0;
 int oldestHistoryIndex = 0;
 
+typedef struct Alias {
+    char* name;
+    char* commandTokens[50];
+    int numCommandTokens;
+    struct Alias* linkedCommands[10];
+    int numLinkedCommands;
+    // only used for detecting loops
+    int visited;
+} Alias;
+Alias* aliasList[10];
+
 /*
  * function declaration 
  */
@@ -27,6 +38,20 @@ void addAliases(char **tokens);
 void unAlias(char *name);
 
 void printAlias();
+
+void replaceAliases(char **tokens);
+
+void saveAliases();
+
+void loadAliases();
+
+void rebuildAliasLinks();
+
+void rebuildAliasLinks();
+
+void linkAliases();
+
+int checkAliasLoop(Alias* current);
 
 void run();
 
@@ -42,19 +67,11 @@ void getHistory(char *pString[51]);
 
 void setCd(char *pString[51]);
 
-void checkAlias(char **tokens);
-
-void saveAliases();
-
-void loadAliases();
-
 
 /*
  * Main programme
  */
 int main(void) {
-    // this should be 0 on successful run, 1 on error
-    int statusCode = 0;
 
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
     char *homeDirectory = getenv("HOME"); //Get the home directory
@@ -80,15 +97,13 @@ int main(void) {
     saveAliases();
 
     setenv("PATH", currentPath, 1);
-    return statusCode;
+    return 0;
 
 }
 
 
 //Running of the program
 void run() {
-
-    int statusCode = 0;
 
     while (1) {
         errno = 0;
@@ -253,7 +268,7 @@ void run() {
             continue;
         }
 
-        checkAlias(tokens);
+        replaceAliases(tokens);
 
 
         //Sets the path
@@ -272,13 +287,11 @@ void run() {
             int pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
-                statusCode = 1;
                 break;
             } else if (pid == 0) { // child process
                 execvp(tokens[0], tokens);
                 // exec functions do not return if successful, this code is reached only due to errors
                 printf("Error: %s %s\n", tokens[0], strerror(errno));
-                statusCode = 1;
                 break;
             } else { // parent process
                 int state;
@@ -442,17 +455,6 @@ void loadHistory() {
     currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
 }
-
-typedef struct Alias {
-    char* name;
-    char* commandTokens[50];
-    int numCommandTokens;
-    struct Alias* linkedCommands[10];
-    int numLinkedCommands;
-    // only used for detecting loops
-    int visited;
-} Alias;
-Alias* aliasList[10];
 
 /*
 * Adding alias
@@ -639,7 +641,7 @@ void rebuildAliasLinks() {
 /*
  * Keep swapping any alias with their command until there are no more substitutions
  */
-void checkAlias(char **tokens) {
+void replaceAliases(char **tokens) {
     int tokenIndex = 0;
     while (tokens[tokenIndex] != NULL) {
         int replacements = 0;
