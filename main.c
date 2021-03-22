@@ -801,7 +801,7 @@ void loadAliases() {
             printf("Invalid alias detected in file\n");
             // undo borked alias
             aliasIndex--;
-            aliasCommands[aliasIndex][tokenIndex] = NULL;
+            aliasList[aliasIndex] = NULL;
         }
     }
     linkAliases();
