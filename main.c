@@ -72,6 +72,12 @@ int main(void) {
     loadHistory();
     loadAliases();
     run();
+    if (homeDirectory != NULL) {
+        // Change to home directory
+        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
+            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
+        }
+    }
     saveHistory();
     saveAliases();
 
