@@ -47,11 +47,9 @@ void loadAliases();
 
 void rebuildAliasLinks();
 
-void rebuildAliasLinks();
-
 void linkAliases();
 
-int checkAliasLoop(Alias* current);
+int checkAliasLoop(Alias* current, int stack[]);
 
 void run();
 
@@ -508,7 +506,9 @@ void addAliases(char **tokens) {
     aliasList[freeSlot] = alias;
 
     rebuildAliasLinks();
+    // detect loops
     int loop = 0;
+    int stack[100];
     for(int i=0; i<10; i++) {
         // reset flags
         for(int i=0; i<10; i++) {
@@ -516,7 +516,8 @@ void addAliases(char **tokens) {
                 aliasList[i]->visited = 0;
             }
         }
-        if(aliasList[i] != NULL && checkAliasLoop(aliasList[i]))
+        memset(stack, 0x00, 100);
+        if(aliasList[i] != NULL && checkAliasLoop(aliasList[i], stack))
             loop = 1;
     }
 
@@ -581,6 +582,14 @@ void printAlias() {
     }
 }
 
+int getIndexFromAlias(Alias* alias) {
+    for(int i=0; i<10; i++) {
+        if(aliasList[i] != NULL && !strcmp(alias->name, aliasList[i]->name))
+            return i;
+    }
+    return -1;
+}
+
 /*
  * For each alias, go over the other aliases and build a list of any aliases it is using.
  * This makes it easier to check for loops later.
@@ -607,20 +616,28 @@ void linkAliases() {
 
 /*
  * Recursive function to check for loops - check every linked alias, and mark every node as visited
- * If we meet a node we've already visited that means there's a loop. 
+ * If we meet a node we've already visited that's in our recursion array that means there's a loop. 
+ * The stack is necessary, otherwise it would only be good for an undirected graph
  */
-int checkAliasLoop(Alias* current) {
-    current->visited = 1;
-    for(int i=0; i<current->numLinkedCommands; i++ ) {
-        if(!current->linkedCommands[i]->visited) {
-            if(checkAliasLoop(current->linkedCommands[i])) {
-                return 1;
-            }
-        } else {
-            return 1;
-        }
+int checkAliasLoop(Alias* current, int stack[]) {
+    if(!current->visited) 
+    { 
+        // Mark the current node as visited
+        current->visited = 1;
+        // Add index of node to list
+        stack[getIndexFromAlias(current)] = 1;
 
+        for(int i=0; i<current->numLinkedCommands; i++) {
+            int linkedCommandIndex = getIndexFromAlias(current->linkedCommands[i]);
+            // if this node's subtree contains a loop return true
+            if(!aliasList[linkedCommandIndex]->visited && checkAliasLoop(current->linkedCommands[i], stack) )
+                return 1;
+            // same if we've already checked out this node
+            else if(stack[linkedCommandIndex])
+                return 1;
+        }
     }
+    stack[getIndexFromAlias(current)] = 0;
     return 0;
 }
 
