@@ -87,6 +87,7 @@ void run() {
     int statusCode = 0;
 
     while (1) {
+        errno = 0;
         print_display_prompt();
 
         char input[512];
