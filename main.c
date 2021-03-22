@@ -654,6 +654,12 @@ void loadAliases() {
             tokenIndex++;
         }
         aliasIndex++;
+        if(tokenIndex < 2) { // alias file contained only one command on this line
+            printf("Invalid alias detected in file\n");
+            // undo borked alias
+            aliasIndex--;
+            aliasCommands[aliasIndex][tokenIndex] = NULL;
+        }
     }
     fclose(pFile);
 }
