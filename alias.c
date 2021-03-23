@@ -288,7 +288,7 @@ void loadAliases() {
     pFile = fopen(".aliases", "r");
 
     if (pFile == NULL) {
-        printf("Alias file not found.\n");
+        // printf("Alias file not found.\n");
         return;
     }
 
@@ -304,7 +304,7 @@ void loadAliases() {
 
         char *string = malloc(sizeof(buffer));
         strcpy(string, buffer);
-        printf("%s \n", string);
+        // printf("%s \n", string);
 
         char *pChr = strtok(string, " \t|><&;");
 

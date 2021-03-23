@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sys/wait.h>
 
-#include "alias.c"
+#include "alias.h"
 #include "history.h"
 
 
@@ -162,7 +162,7 @@ void run() {
         } else {
             //check if the command is history
             if (!strcmp(input, "history") && history[0] == NULL) {
-                printf("There is not history commands to display.\n");
+                printf("No history commands to display.\n");
                 history[currentHistoryIndex] = strdup(input);
                 //continue;
             }
@@ -395,7 +395,7 @@ void loadHistory() {
 
     pFile = fopen(".hist_list", "r");
     if (pFile == NULL) {
-        printf("History file not found.\n");
+        // printf("History file not found.\n");
         return;
     }
 
