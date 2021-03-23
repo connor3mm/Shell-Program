@@ -27,6 +27,7 @@ void setPath(char *pString[51]);
 
 void setCd(char *pString[51]);
 
+int isCommandEmpty(char* string);
 
 /*
  * Main programme
@@ -78,6 +79,10 @@ void run() {
 
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
+
+        if(isCommandEmpty(input)) {
+            continue;
+        }
 
         // boolean - whether this is a history command
         int isHistoryCommand = 0;
@@ -413,4 +418,21 @@ void loadHistory() {
     currentHistorySize = count;
     currentHistoryIndex = count % HISTORY_LIMIT;
     fclose(pFile);
+}
+
+int isCommandEmpty(char* string) {
+    char* separators = " \t|><&;";
+    size_t numSeparators = 0;
+    // for every char in the string
+    for(int i=0; i < strlen(string); i++) {
+        // check if it is in the separators
+        for(int t=0; t < strlen(separators); t++) {
+            if(string[i] == separators[t]) {
+                numSeparators++;
+                break;
+            }
+        }
+    }
+    // whether this string was just separators
+    return numSeparators == strlen(string);
 }
