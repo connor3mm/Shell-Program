@@ -63,7 +63,7 @@ void addAliases(char **tokens) {
                 aliasList[i]->visited = 0;
             }
         }
-        memset(stack, 0x00, 100);
+        memset(stack, 0x00, 100 * sizeof(int));
         if(aliasList[i] != NULL && checkAliasLoop(aliasList[i], stack))
             loop = 1;
     }
