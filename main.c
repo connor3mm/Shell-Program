@@ -8,28 +8,13 @@
 #include <string.h>
 #include <sys/wait.h>
 
-
-#define HISTORY_LIMIT 20
-char *history[HISTORY_LIMIT];
-int currentHistorySize = 0;
-int currentHistoryIndex = 0;
-int oldestHistoryIndex = 0;
-char *aliasCommands[10][50];
+#include "alias.c"
+#include "history.h"
 
 
 /*
  * function declaration 
  */
-void saveHistory();
-
-void loadHistory();
-
-void addAliases(char **tokens);
-
-void unAlias(char *name);
-
-void printAlias();
-
 void run();
 
 void changeToHomeDirectory(const char *homeDirectory);
@@ -40,23 +25,14 @@ void getPath(char *pString[51]);
 
 void setPath(char *pString[51]);
 
-void getHistory(char *pString[51]);
-
 void setCd(char *pString[51]);
 
-void checkAlias(char **tokens);
-
-void saveAliases();
-
-void loadAliases();
-
+int isCommandEmpty(char* string);
 
 /*
  * Main programme
  */
 int main(void) {
-    // this should be 0 on successful run, 1 on error
-    int statusCode = 0;
 
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
     char *homeDirectory = getenv("HOME"); //Get the home directory
@@ -82,15 +58,13 @@ int main(void) {
     saveAliases();
 
     setenv("PATH", currentPath, 1);
-    return statusCode;
+    return 0;
 
 }
 
 
 //Running of the program
 void run() {
-
-    int statusCode = 0;
 
     while (1) {
         errno = 0;
@@ -105,6 +79,10 @@ void run() {
 
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
+
+        if(isCommandEmpty(input)) {
+            continue;
+        }
 
         // boolean - whether this is a history command
         int isHistoryCommand = 0;
@@ -255,7 +233,7 @@ void run() {
             continue;
         }
 
-        checkAlias(tokens);
+        replaceAliases(tokens);
 
 
         //Sets the path
@@ -274,13 +252,11 @@ void run() {
             int pid = fork();
             if (pid < 0) {
                 printf("fork() failed\n");
-                statusCode = 1;
                 break;
             } else if (pid == 0) { // child process
                 execvp(tokens[0], tokens);
                 // exec functions do not return if successful, this code is reached only due to errors
                 printf("Error: %s %s\n", tokens[0], strerror(errno));
-                statusCode = 1;
                 break;
             } else { // parent process
                 int state;
@@ -296,7 +272,6 @@ void run() {
 /*
  * Start of functions
  */
-
 
 /*
  * Changing to the home directory
@@ -445,221 +420,19 @@ void loadHistory() {
     fclose(pFile);
 }
 
-
-/*
-* Adding alias
-*/
-void addAliases(char **tokens) {
-    char *name = tokens[1];
-
-    int freeSlot = 0;
-    for (int i = 0; i < 10; ++i) {
-        if (aliasCommands[i][0] != NULL) {
-            freeSlot++;
-        } else {
-            break; // we've found an empty slot in the aliasCommands array!
-        }
-    }
-
-    if (freeSlot == 10) {
-        printf("Error, no more aliases available.\n");
-        return;
-    }
-
-    int index = 0;
-    while (aliasCommands[index][0] != NULL) {
-        if (strcmp(aliasCommands[index][0], name) == 0) {
-            printf("Error: This name already exists and cannot be used again.\n");
-            return;
-        }
-        index++;
-    }
-
-    int nextTokenIndex = 0;
-    while (tokens[nextTokenIndex + 1] != NULL) {
-        aliasCommands[freeSlot][nextTokenIndex] = strdup(tokens[nextTokenIndex + 1]);
-        nextTokenIndex++;
-    }
-
-    // aliasCommands[index][0] = strdup(name);
-    // aliasCommands[index][1] = strdup(command);
-    // printf("Alias with name %s with command %s is added. \n", name, command);
-}
-
-
-/*
-* Removing alias
-*/
-void unAlias(char *name) {
-    int count = 0;
-    int index = 0;
-    while (index < 10) {
-        if (aliasCommands[index][0] != NULL) {
-            if (strcmp(aliasCommands[index][0], name) == 0) {
-                aliasCommands[index][0] = NULL;
-                aliasCommands[index][1] = NULL;
-
-                count++;
-            }
-        }
-        index++;
-    }
-
-    if (count == 0) {
-        printf("The command you entered does not have an alias.\n");
-    } else {
-        printf("Command %s has been removed %d times\n", name, count);
-    }
-}
-
-
-/*
- * Print list of aliases
- */
-void printAlias() {
-    int aliasIndex = 0;
-    int aliasesFound = 0;
-    while (aliasIndex < 10) {
-        if (aliasCommands[aliasIndex][0] != NULL) {
-            aliasesFound++;
-            printf("Name: %s - Command: ", aliasCommands[aliasIndex][0] );
-            int aliasTokenIndex = 1;
-            while(aliasCommands[aliasIndex][aliasTokenIndex] != NULL) {
-                printf("%s ", aliasCommands[aliasIndex][aliasTokenIndex]);
-                aliasTokenIndex++;
-            }
-            printf("\n");
-        }
-        aliasIndex++;
-    }
-
-    if (aliasesFound == 0) {
-        printf("There are no aliases set.\n");
-    }
-}
-
-
-/*
- * check if the command is an alias and if it is use the corresponding command
- */
-void checkAlias(char **tokens) {
-    int tokenIndex = 0;
-    while (tokens[tokenIndex] != NULL) {
-        for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
-            if (aliasCommands[aliasIndex][0] == NULL || tokens[tokenIndex] == NULL) {
-                continue;
-            }
-            if (!strcmp(tokens[tokenIndex], aliasCommands[aliasIndex][0])) {
-                // get number of tokens from alias
-                int aliasTokens = 0;
-                while (aliasCommands[aliasIndex][aliasTokens + 1] != NULL)
-                    aliasTokens++;
-                int tokensLeft = 0;
-                while (tokens[tokenIndex + tokensLeft + 1] != NULL)
-                    tokensLeft++;
-                // move remaining tokens after alias into temp array so we don't lose them
-                char **tokensToShift = malloc(tokensLeft);
-                for (int i = 0; i < tokensLeft; i++) {
-                    tokensToShift[i] = tokens[tokenIndex + 1 + i];
-                }
-                // move alias command tokens into input array, starting from the alias
-                for (int i = 0; i < aliasTokens; i++) {
-                    tokens[tokenIndex + i] = aliasCommands[aliasIndex][1 + i];
-                }
-                // move tokens from temp array back to our main tokens array, starting after the alias command
-                for (int i = 0; i < tokensLeft; i++) {
-                    tokens[tokenIndex + aliasTokens + i] = tokensToShift[i];
-                }
-                tokens[tokenIndex + aliasTokens + tokensLeft] = NULL;
-                free(tokensToShift);
-                tokenIndex = tokenIndex + aliasTokens;
-            }
-        }
-        tokenIndex++;
-    }
-}
-
-
-/*
- * save aliases into file
- */
-void saveAliases() {
-    FILE *a;
-    a = fopen(".aliases", "w");
-
-    char aliasLine[512];
-
-    for (int aliasIndex = 0; aliasIndex < 10; aliasIndex++) {
-        if (aliasCommands[aliasIndex][0] == NULL) {
-            continue;
-        }
-        int tokenIndex = 0;
-        while (aliasCommands[aliasIndex][tokenIndex] != NULL) {
-            strcat(aliasLine, aliasCommands[aliasIndex][tokenIndex]);
-            strcat(aliasLine, " ");
-            tokenIndex++;
-        }
-        // replace the last space with newline
-        aliasLine[strlen(aliasLine) - 1] = '\n';
-        fputs(aliasLine, a);
-        // Discard current line, otherwise the next strcat will append to it
-        aliasLine[0] = '\0';
-    }
-    fclose(a);
-}
-
-
-/*
- * load aliases from file
- */
-void loadAliases() {
-    FILE *pFile;
-
-    pFile = fopen(".aliases", "r");
-
-    if (pFile == NULL) {
-        printf("Alias file not found.\n");
-        return;
-    }
-
-    int aliasIndex = 0;
-    char buffer[1000];
-
-    while (fgets(buffer, 1000, pFile) != NULL) {
-        size_t length = strlen(buffer);
-
-        if (length > 0 && buffer[length - 1] == '\n') {
-            buffer[--length] = '\0';
-        }
-
-        char *string = malloc(sizeof(buffer));
-        strcpy(string, buffer);
-        printf("%s \n", string);
-
-        char *pChr = strtok(string, " \t|><&;");
-
-        if (pChr == NULL) { // when it's an empty line
-            continue;
-        }
-
-        // parse alias line
-        int tokenIndex = 0;
-        while (pChr != NULL) {
-            if (tokenIndex >= 50) {
-                printf("Argument limit exceeded");
+int isCommandEmpty(char* string) {
+    char* separators = " \t|><&;";
+    size_t numSeparators = 0;
+    // for every char in the string
+    for(int i=0; i < strlen(string); i++) {
+        // check if it is in the separators
+        for(int t=0; t < strlen(separators); t++) {
+            if(string[i] == separators[t]) {
+                numSeparators++;
                 break;
             }
-            aliasCommands[aliasIndex][tokenIndex] = strdup(pChr);
-            pChr = strtok(NULL, " \t|><&;");
-            tokenIndex++;
-        }
-        aliasIndex++;
-        if(tokenIndex < 2) { // alias file contained only one command on this line
-            printf("Invalid alias detected in file\n");
-            // undo borked alias
-            aliasIndex--;
-            aliasCommands[aliasIndex][tokenIndex] = NULL;
         }
     }
-    fclose(pFile);
+    // whether this string was just separators
+    return numSeparators == strlen(string);
 }
