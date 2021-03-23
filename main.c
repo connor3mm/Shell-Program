@@ -17,8 +17,6 @@
  */
 void run();
 
-void changeToHomeDirectory(const char *homeDirectory);
-
 int tokenizeInput(char *input, char **tokens, char *pChr);
 
 void getPath(char *pString[51]);
@@ -272,18 +270,6 @@ void run() {
 /*
  * Start of functions
  */
-
-/*
- * Changing to the home directory
- */
-void changeToHomeDirectory(const char *homeDirectory) {
-    if (homeDirectory != NULL) {
-        // Change to home directory
-        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
-            printf("Error while changing directory to $HOME: %s\n", strerror(errno));
-        }
-    }
-}
 
 
 /*
