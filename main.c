@@ -8,21 +8,13 @@
 #include <string.h>
 #include <sys/wait.h>
 
-#include "alias.h"
+#include "alias.c"
+#include "history.h"
 
-#define HISTORY_LIMIT 20
-char *history[HISTORY_LIMIT];
-int currentHistorySize = 0;
-int currentHistoryIndex = 0;
-int oldestHistoryIndex = 0;
 
 /*
  * function declaration 
  */
-void saveHistory();
-
-void loadHistory();
-
 void run();
 
 void changeToHomeDirectory(const char *homeDirectory);
@@ -32,8 +24,6 @@ int tokenizeInput(char *input, char **tokens, char *pChr);
 void getPath(char *pString[51]);
 
 void setPath(char *pString[51]);
-
-void getHistory(char *pString[51]);
 
 void setCd(char *pString[51]);
 
@@ -277,7 +267,6 @@ void run() {
 /*
  * Start of functions
  */
-
 
 /*
  * Changing to the home directory
