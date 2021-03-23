@@ -17,8 +17,6 @@
  */
 void run();
 
-void changeToHomeDirectory(const char *homeDirectory);
-
 int tokenizeInput(char *input, char **tokens, char *pChr);
 
 void getPath(char *pString[51]);
@@ -27,7 +25,8 @@ void setPath(char *pString[51]);
 
 void setCd(char *pString[51]);
 
-int isCommandEmpty(char* string);
+int isCommandEmpty(char *string);
+
 
 /*
  * Main programme
@@ -80,7 +79,7 @@ void run() {
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
-        if(isCommandEmpty(input)) {
+        if (isCommandEmpty(input)) {
             continue;
         }
 
@@ -117,6 +116,7 @@ void run() {
                 printf("Invalid history input\n");
                 continue;
             }
+
             if (errno != 0) {
                 printf("Error: %s\n", strerror(errno));
                 continue;
@@ -142,6 +142,7 @@ void run() {
             else {
                 // subtract from current index
                 int offsetFromLatest = currentHistoryIndex + historyNumber;
+
                 if (offsetFromLatest < 0) {
                     // index has gone negative, wrap around from the end of the array
                     historyNumber = HISTORY_LIMIT + offsetFromLatest;
@@ -191,7 +192,7 @@ void run() {
 
 
         //splitting input with tokens - don't go on if it fails
-        if( !tokenizeInput(input, tokens, pChr) ) {
+        if (!tokenizeInput(input, tokens, pChr)) {
             continue;
         }
 
@@ -273,6 +274,7 @@ void run() {
  * Start of functions
  */
 
+
 /*
  * Changing to the home directory
  */
@@ -286,9 +288,12 @@ void changeToHomeDirectory(const char *homeDirectory) {
 }
 
 
-/*
+/**
  * Tokenizing the input the user makes
- * Return 0 on failure, 1 on success
+ * @param input
+ * @param tokens
+ * @param pChr
+ * @return Return 0 on failure, 1 on success
  */
 int tokenizeInput(char *input, char **tokens, char *pChr) {
     pChr = strtok(input, " \t|><&;");
@@ -420,14 +425,20 @@ void loadHistory() {
     fclose(pFile);
 }
 
-int isCommandEmpty(char* string) {
-    char* separators = " \t|><&;";
+
+/**
+ * Checks if the user input is empty
+ * @param string
+ * @return number of separators
+ */
+int isCommandEmpty(char *string) {
+    char *separators = " \t|><&;";
     size_t numSeparators = 0;
     // for every char in the string
-    for(int i=0; i < strlen(string); i++) {
+    for (int i = 0; i < strlen(string); i++) {
         // check if it is in the separators
-        for(int t=0; t < strlen(separators); t++) {
-            if(string[i] == separators[t]) {
+        for (int t = 0; t < strlen(separators); t++) {
+            if (string[i] == separators[t]) {
                 numSeparators++;
                 break;
             }
