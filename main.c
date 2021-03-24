@@ -5,14 +5,13 @@
 
 #include <stdio.h>
 #include <memory.h>
-#include "display.h"
-#include "parser.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/wait.h>
 
+#include "display.h"
 #include "alias.h"
 #include "history.h"
 
@@ -30,7 +29,7 @@ void setPath(char *pString[51]);
 
 void setCd(char *pString[51]);
 
-int isCommandEmpty(char* string);
+int isCommandEmpty(char *string);
 
 /*
  * Main program
@@ -81,7 +80,7 @@ void run() {
         // remove \n at the end of the line by replacing it with null-terminator
         input[strlen(input) - 1] = (char) 0x00;
 
-        if(isCommandEmpty(input)) {
+        if (isCommandEmpty(input)) {
             continue;
         }
 
@@ -192,7 +191,7 @@ void run() {
 
 
         //splitting input with tokens - don't go on if it fails
-        if( !tokenizeInput(input, tokens, pChr) ) {
+        if (!tokenizeInput(input, tokens, pChr)) {
             continue;
         }
 
@@ -412,14 +411,14 @@ void loadHistory() {
 /*
  * Check if this command line only contains separators - used before storing into history and before tokenisation.
  */
-int isCommandEmpty(char* string) {
-    char* separators = " \t|><&;";
+int isCommandEmpty(char *string) {
+    char *separators = " \t|><&;";
     size_t numSeparators = 0;
     // for every char in the string
-    for(int i=0; i < strlen(string); i++) {
+    for (int i = 0; i < strlen(string); i++) {
         // check if it is in the separators
-        for(int t=0; t < strlen(separators); t++) {
-            if(string[i] == separators[t]) {
+        for (int t = 0; t < strlen(separators); t++) {
+            if (string[i] == separators[t]) {
                 numSeparators++;
                 break;
             }

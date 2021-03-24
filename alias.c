@@ -23,15 +23,15 @@ void addAlias(char **tokens) {
     }
 
     // Check for duplicate names
-    for(int i=0; i < 10; i++) {
-        if(aliasList[i] != NULL && !strcmp(aliasList[i]->name, name) ) {
+    for (int i = 0; i < 10; i++) {
+        if (aliasList[i] != NULL && !strcmp(aliasList[i]->name, name)) {
             printf("Error: This name already exists and cannot be used again.\n");
             return;
         }
     }
 
     // Create and add alias, using a persistent pointer with malloc.
-    Alias* alias = malloc(sizeof(Alias));
+    Alias *alias = malloc(sizeof(Alias));
     // Set the name
     alias->name = strdup(name);
     alias->numCommandTokens = 0;
@@ -39,7 +39,7 @@ void addAlias(char **tokens) {
     int nextTokenIndex = 0;
     // copy command tokens starting from 2, since we have 'alias' at 0 and the name at 1
     while (tokens[nextTokenIndex + 2] != NULL) {
-        if(!strcmp(name, tokens[nextTokenIndex + 2])) {
+        if (!strcmp(name, tokens[nextTokenIndex + 2])) {
             printf("Can't add alias, circular definition detected\n");
             return;
         }
@@ -56,20 +56,20 @@ void addAlias(char **tokens) {
     // detect loops
     int loop = 0;
     int stack[100];
-    for(int i=0; i<10; i++) {
+    for (int i = 0; i < 10; i++) {
         // reset flags
-        for(int i=0; i<10; i++) {
-            if(aliasList[i] != NULL) {
+        for (int i = 0; i < 10; i++) {
+            if (aliasList[i] != NULL) {
                 aliasList[i]->visited = 0;
             }
         }
         memset(stack, 0x00, 100 * sizeof(int));
-        if(aliasList[i] != NULL && checkAliasLoop(aliasList[i], stack))
+        if (aliasList[i] != NULL && checkAliasLoop(aliasList[i], stack))
             loop = 1;
     }
 
     // If the definition we've added is causing a loop, remove it
-    if(loop) {
+    if (loop) {
         printf("Can't add alias, circular definition detected\n");
         free(aliasList[freeSlot]);
         aliasList[freeSlot] = NULL;
@@ -83,8 +83,8 @@ void addAlias(char **tokens) {
 */
 void unAlias(char *name) {
     int removed = 0;
-    for(int i=0; i<10; i++) {
-        if( aliasList[i] != NULL && !strcmp(aliasList[i]->name, name) ) {
+    for (int i = 0; i < 10; i++) {
+        if (aliasList[i] != NULL && !strcmp(aliasList[i]->name, name)) {
             // free Alias pointer and set it to null
             free(aliasList[i]);
             aliasList[i] = NULL;
@@ -93,7 +93,7 @@ void unAlias(char *name) {
             break;
         }
     }
-    if(!removed) {
+    if (!removed) {
         printf("The alias you entered does not exist.\n");
     } else {
         rebuildAliasLinks();
@@ -113,9 +113,9 @@ void printAlias() {
     while (aliasIndex < 10) {
         if (aliasList[aliasIndex] != NULL) {
             aliasesFound++;
-            printf("Name: %s - Command: ", aliasList[aliasIndex]->name );
+            printf("Name: %s - Command: ", aliasList[aliasIndex]->name);
             int aliasTokenIndex = 0;
-            for(int i=0; i<aliasList[aliasIndex]->numCommandTokens; i++) {
+            for (int i = 0; i < aliasList[aliasIndex]->numCommandTokens; i++) {
                 printf("%s ", aliasList[aliasIndex]->commandTokens[i]);
                 aliasTokenIndex++;
             }
@@ -130,9 +130,9 @@ void printAlias() {
 }
 
 // Get index of provided alias in aliasList
-int getIndexFromAlias(Alias* alias) {
-    for(int i=0; i<10; i++) {
-        if(aliasList[i] != NULL && !strcmp(alias->name, aliasList[i]->name))
+int getIndexFromAlias(Alias *alias) {
+    for (int i = 0; i < 10; i++) {
+        if (aliasList[i] != NULL && !strcmp(alias->name, aliasList[i]->name))
             return i;
     }
     return -1;
@@ -143,19 +143,19 @@ int getIndexFromAlias(Alias* alias) {
  * This makes it easier to check for loops later.
  */
 void linkAliases() {
-    for(int firstAlias=0; firstAlias<10; firstAlias++) {
+    for (int firstAlias = 0; firstAlias < 10; firstAlias++) {
         // skip over empty slots
-    	if(aliasList[firstAlias] == NULL)
-    	    continue;
+        if (aliasList[firstAlias] == NULL)
+            continue;
         // skip over empty slots and the alias we're comparing
-    	for(int secondAlias=0; secondAlias<10; secondAlias++) {
-            if(aliasList[secondAlias] == NULL || firstAlias == secondAlias)
+        for (int secondAlias = 0; secondAlias < 10; secondAlias++) {
+            if (aliasList[secondAlias] == NULL || firstAlias == secondAlias)
                 continue;
-            for(int token=0;token<aliasList[secondAlias]->numCommandTokens;token++) {
-                if( !strcmp(aliasList[firstAlias]->name, aliasList[secondAlias]->commandTokens[token]) ) {
+            for (int token = 0; token < aliasList[secondAlias]->numCommandTokens; token++) {
+                if (!strcmp(aliasList[firstAlias]->name, aliasList[secondAlias]->commandTokens[token])) {
                     int numLinkedCommands = aliasList[secondAlias]->numLinkedCommands;
                     aliasList[secondAlias]->linkedCommands[numLinkedCommands] = aliasList[firstAlias];
-                    aliasList[secondAlias]->numLinkedCommands++; 
+                    aliasList[secondAlias]->numLinkedCommands++;
                 }
             }
         }
@@ -167,21 +167,20 @@ void linkAliases() {
  * If we meet a node we've already visited that's in our recursion array that means there's a loop. 
  * The stack is necessary, otherwise it would only be good for an undirected graph
  */
-int checkAliasLoop(Alias* current, int stack[]) {
-    if(!current->visited) 
-    { 
+int checkAliasLoop(Alias *current, int stack[]) {
+    if (!current->visited) {
         // Mark the current node as visited
         current->visited = 1;
         // Add index of node to list
         stack[getIndexFromAlias(current)] = 1;
 
-        for(int i=0; i<current->numLinkedCommands; i++) {
+        for (int i = 0; i < current->numLinkedCommands; i++) {
             int linkedCommandIndex = getIndexFromAlias(current->linkedCommands[i]);
             // if this node's subtree contains a loop return true
-            if(!aliasList[linkedCommandIndex]->visited && checkAliasLoop(current->linkedCommands[i], stack) )
+            if (!aliasList[linkedCommandIndex]->visited && checkAliasLoop(current->linkedCommands[i], stack))
                 return 1;
-            // same if we've already checked out this node
-            else if(stack[linkedCommandIndex])
+                // same if we've already checked out this node
+            else if (stack[linkedCommandIndex])
                 return 1;
         }
     }
@@ -194,8 +193,8 @@ int checkAliasLoop(Alias* current, int stack[]) {
  * This ensures there are no empty slots in the linkedCommands array if we remove an alias.
  */
 void rebuildAliasLinks() {
-    for(int i=0; i<10; i++) {
-        if(aliasList[i] != NULL) {
+    for (int i = 0; i < 10; i++) {
+        if (aliasList[i] != NULL) {
             aliasList[i]->numLinkedCommands = 0;
         }
     }
@@ -242,7 +241,7 @@ void replaceAliases(char **tokens) {
             }
         }
         // no replacements were performed, check next token
-        if(replacements == 0)
+        if (replacements == 0)
             tokenIndex++;
     }
 }
@@ -266,7 +265,7 @@ void saveAliases() {
         strcat(aliasLine, aliasList[aliasIndex]->name);
         strcat(aliasLine, " ");
         // Copy every token into output line, add a space after each one
-        for(int i=0; i<aliasList[aliasIndex]->numCommandTokens; i++) {
+        for (int i = 0; i < aliasList[aliasIndex]->numCommandTokens; i++) {
             strcat(aliasLine, aliasList[aliasIndex]->commandTokens[i]);
             strcat(aliasLine, " ");
         }
@@ -314,7 +313,7 @@ void loadAliases() {
         }
 
         // Store alias tokens into line
-        char* line[50];
+        char *line[50];
 
         int tokenIndex = 0;
         while (pChr != NULL) {
@@ -328,15 +327,15 @@ void loadAliases() {
         }
 
         // Use first token as name, the others as command tokens
-        
-        Alias* alias = malloc(sizeof(Alias));
+
+        Alias *alias = malloc(sizeof(Alias));
         // set the name to the 0th token
         alias->name = strdup(line[0]);
 
         alias->numCommandTokens = 0;
         // skip over 0th token, which is the name
-        for(int i=0; i<tokenIndex - 1; i++) {
-            alias->commandTokens[i] = line[i+1];
+        for (int i = 0; i < tokenIndex - 1; i++) {
+            alias->commandTokens[i] = line[i + 1];
             alias->numCommandTokens++;
         }
 
@@ -345,7 +344,7 @@ void loadAliases() {
         aliasList[aliasIndex] = alias;
 
         aliasIndex++;
-        if(tokenIndex < 2) { // alias file contained only one command on this line
+        if (tokenIndex < 2) { // alias file contained only one command on this line
             printf("Invalid alias detected in file\n");
             // undo borked alias
             aliasIndex--;

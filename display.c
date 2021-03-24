@@ -16,7 +16,7 @@ void print_display_prompt() {
     getcwd(current_working_dir, PATH_MAX);
     // Get last folder - we want to keep the prompt length down as per the specification
     // assume folder will never be null since every absolute Unix-style path needs a /
-    char* folder = strrchr(current_working_dir, '/');
+    char *folder = strrchr(current_working_dir, '/');
     // Get username
     struct passwd *passwd_entry = getpwuid(getuid());
     if (passwd_entry == NULL) {
@@ -24,5 +24,5 @@ void print_display_prompt() {
         exit(1);
     }
     // print prompt - add 1 to folder so it doesn't include the /
-    printf("%s@%s> ", passwd_entry->pw_name, folder+1);
+    printf("%s@%s> ", passwd_entry->pw_name, folder + 1);
 }

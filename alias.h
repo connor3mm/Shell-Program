@@ -3,17 +3,17 @@
 #include <stdio.h>
 
 typedef struct Alias {
-    char* name;
+    char *name;
     // command and parameters
-    char* commandTokens[50];
+    char *commandTokens[50];
     int numCommandTokens;
     // other aliases referenced by this alias
-    struct Alias* linkedCommands[10];
+    struct Alias *linkedCommands[10];
     int numLinkedCommands;
     // only used for detecting loops
     int visited;
 } Alias;
-Alias* aliasList[10];
+Alias *aliasList[10];
 
 void addAlias(char **tokens);
 
@@ -31,4 +31,4 @@ void rebuildAliasLinks();
 
 void linkAliases();
 
-int checkAliasLoop(Alias* current, int stack[]);
+int checkAliasLoop(Alias *current, int stack[]);
