@@ -4,7 +4,7 @@
 /*
 * Adding alias
 */
-void addAliases(char **tokens) {
+void addAlias(char **tokens) {
     char *name = tokens[1];
 
     // Check if there's a free slot in our array of 10 aliases
@@ -129,6 +129,7 @@ void printAlias() {
     }
 }
 
+// Get index of provided alias in aliasList
 int getIndexFromAlias(Alias* alias) {
     for(int i=0; i<10; i++) {
         if(aliasList[i] != NULL && !strcmp(alias->name, aliasList[i]->name))

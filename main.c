@@ -1,3 +1,8 @@
+/*
+ * Group number 4
+ * Alessandro Lekkas, Cameron Pollock, Connor McGuire, Ramsey Ediku, Tamara Jankova
+ */
+
 #include <stdio.h>
 #include <memory.h>
 #include "display.h"
@@ -13,7 +18,7 @@
 
 
 /*
- * function declaration 
+ * Local function declarations
  */
 void run();
 
@@ -28,17 +33,16 @@ void setCd(char *pString[51]);
 int isCommandEmpty(char* string);
 
 /*
- * Main programme
+ * Main program
  */
 int main(void) {
 
     char *currentPath = getenv("PATH"); // Gets current path so we can set it on exit
     char *homeDirectory = getenv("HOME"); //Get the home directory
 
-    //changeToHomeDirectory(homeDirectory);
+    // Change to home directory
     if (homeDirectory != NULL) {
-        // Change to home directory
-        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
+        if (chdir(homeDirectory) == -1) { //Changing the directory failed.
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
@@ -47,8 +51,7 @@ int main(void) {
     loadAliases();
     run();
     if (homeDirectory != NULL) {
-        // Change to home directory
-        if (chdir(homeDirectory) == -1) { //Changing the directory failed. Need to handle this somehow
+        if (chdir(homeDirectory) == -1) {
             printf("Error while changing directory to $HOME: %s\n", strerror(errno));
         }
     }
@@ -63,7 +66,7 @@ int main(void) {
 
 //Running of the program
 void run() {
-
+    // main loop: wait for user's command, interpret, repeat until exit
     while (1) {
         errno = 0;
         print_display_prompt();
@@ -218,7 +221,7 @@ void run() {
                 printf("Error, alias needs at least one argument.\n");
                 continue;
             }
-            addAliases(tokens);
+            addAlias(tokens);
             continue;
 
             //Removing alias
@@ -230,7 +233,7 @@ void run() {
             unAlias(tokens[1]);
             continue;
         }
-
+        // replace every alias with its commands
         replaceAliases(tokens);
 
 
@@ -273,7 +276,7 @@ void run() {
 
 
 /*
- * Tokenizing the input the user makes
+ * Tokenizing command line
  * Return 0 on failure, 1 on success
  */
 int tokenizeInput(char *input, char **tokens, char *pChr) {
@@ -298,7 +301,7 @@ int tokenizeInput(char *input, char **tokens, char *pChr) {
 
 
 /*
- * Definition for the ''cd' command
+ * Definition for the cd command
  */
 void setCd(char *tokens[51]) {
     if (tokens[1] == NULL) {
@@ -406,6 +409,9 @@ void loadHistory() {
     fclose(pFile);
 }
 
+/*
+ * Check if this command line only contains separators - used before storing into history and before tokenisation.
+ */
 int isCommandEmpty(char* string) {
     char* separators = " \t|><&;";
     size_t numSeparators = 0;
